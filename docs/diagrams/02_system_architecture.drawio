@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-23T15:00:00.000Z" agent="5.0" version="21.0.0" type="device">
+  <diagram id="Page-1" name="Page-1">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+    <!-- Tier 1 -->
+    <mxCell id="t1" value="Tier 1: Presentation (Next.js 14)" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="50" y="90" width="340" height="840" as="geometry" />
+    </mxCell>
+    <mxCell id="c_student" value="Student Web Portal&#xa;«UI Component»&#xa;• LoginPage &amp; AuthGuard&#xa;• LectureViewer (Video/Text)&#xa;• InteractiveQuizRunner&#xa;• CompetencyRadarView&#xa;• Remedial Recommendations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t1">
+      <mxGeometry x="20" y="80" width="300" height="340" as="geometry" />
+    </mxCell>
+    <mxCell id="c_instructor" value="Instructor &amp; Admin Portal&#xa;«UI Component»&#xa;• Curriculum &amp; Lessons&#xa;• QuestionBankManager&#xa;• SkillTaggingSelector&#xa;• Class Competency Analytics&#xa;• User Accounts &amp; RBAC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t1">
+      <mxGeometry x="20" y="460" width="300" height="340" as="geometry" />
+    </mxCell>
+
+    <!-- Tier 2 -->
+    <mxCell id="t2" value="Tier 2: Backend API (Express.js)" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="450" y="90" width="340" height="840" as="geometry" />
+    </mxCell>
+    <mxCell id="c_auth" value="Auth &amp; RBAC Controller&#xa;• POST /api/auth/login&#xa;• POST /api/auth/register&#xa;• JWT Verification Guard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t2">
+      <mxGeometry x="20" y="80" width="300" height="150" as="geometry" />
+    </mxCell>
+    <mxCell id="c_curriculum" value="Curriculum &amp; Quiz Controller&#xa;• GET /api/courses&#xa;• GET /api/courses/:id/lessons&#xa;• GET /api/quizzes/:id&#xa;• POST /api/questions (with skill_id)&#xa;• GET /api/skills" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t2">
+      <mxGeometry x="20" y="260" width="300" height="210" as="geometry" />
+    </mxCell>
+    <mxCell id="c_telemetry" value="Telemetry Ingestion &amp; AI Proxy&#xa;• POST /api/quizzes/interactions&#xa;  - Single-question submission&#xa;  - Validates answer in DB&#xa;  - INSERT into quiz_interactions&#xa;• GET /api/analytics/competency&#xa;  - Extracts temporal sequence&#xa;  - Forwards to AI Microservice" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t2">
+      <mxGeometry x="20" y="500" width="300" height="300" as="geometry" />
+    </mxCell>
+
+    <!-- Tier 3 -->
+    <mxCell id="t3" value="Tier 3: Persistence (PostgreSQL 15)" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="850" y="90" width="340" height="840" as="geometry" />
+    </mxCell>
+    <mxCell id="c_schema" value="Relational LMS Tables (3NF)&#xa;• users (UUID, role, email)&#xa;• courses (UUID, instructor_id)&#xa;• lessons (UUID, course_id)&#xa;• quizzes (UUID, lesson_id)&#xa;• skills (UUID, code UNIQUE)&#xa;• questions (UUID, skill_id FK)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t3">
+      <mxGeometry x="20" y="80" width="300" height="340" as="geometry" />
+    </mxCell>
+    <mxCell id="c_interactions" value="Core Telemetry Table&#xa;• quiz_interactions (id, user_id,&#xa;  question_id, skill_id, is_correct,&#xa;  attempt_count, created_at)&#xa;• Composite Index:&#xa;  (user_id, skill_id, created_at DESC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t3">
+      <mxGeometry x="20" y="460" width="300" height="340" as="geometry" />
+    </mxCell>
+
+    <!-- Tier 4 -->
+    <mxCell id="t4" value="Tier 4: AI Engine (FastAPI / PyTorch)" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1250" y="90" width="340" height="840" as="geometry" />
+    </mxCell>
+    <mxCell id="c_ai_gateway" value="Inference API Gateway&#xa;• GET /health&#xa;• POST /predict-mastery&#xa;  - Input: interaction sequence&#xa;  - Output: mastery JSON vector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t4">
+      <mxGeometry x="20" y="80" width="300" height="175" as="geometry" />
+    </mxCell>
+    <mxCell id="c_models" value="Knowledge Tracing Engine&#xa;• 1. BKT Baseline (pyBKT / HMM)&#xa;  - P(L0), P(T), P(G), P(S)&#xa;• 2. DKT Neural Network (PyTorch)&#xa;  - Recurrent LSTM hidden memory&#xa;  - Dual 2K representation&#xa;  - Sigmoid mastery prediction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t4">
+      <mxGeometry x="20" y="285" width="300" height="260" as="geometry" />
+    </mxCell>
+    <mxCell id="c_bench" value="Benchmark &amp; Validation&#xa;• ASSISTments 2009-2010&#xa;• Student-Split 5-Fold CV&#xa;• Metrics: AUC-ROC, Accuracy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="t4">
+      <mxGeometry x="20" y="575" width="300" height="225" as="geometry" />
+    </mxCell>
+    
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

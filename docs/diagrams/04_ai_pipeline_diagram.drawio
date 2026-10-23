@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-23T15:00:00.000Z" agent="5.0" version="21.0.0" type="device">
+  <diagram id="Page-1" name="Page-1">
+    <mxGraphModel dx="1680" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1680" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+    <!-- 4 Stages -->
+    <mxCell id="st1" value="Stage 1: Telemetry Ingestion" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="50" y="90" width="350" height="780" as="geometry" />
+    </mxCell>
+    <mxCell id="st1_c1" value="1. Telemetry Tuple x_t&#xa;x_t = ( q_t , c_t , a_t )&#xa;• q_t: Question UUID&#xa;• c_t: Skill / KC Identifier&#xa;• a_t: Answer Correctness" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st1">
+      <mxGeometry x="20" y="60" width="310" height="135" as="geometry" />
+    </mxCell>
+    <mxCell id="st1_c2" value="2. Binary Performance a_t&#xa;a_t ∈ {0, 1}&#xa;• a_t = 1: Correct response&#xa;• a_t = 0: Incorrect response&#xa;Logged per question" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st1">
+      <mxGeometry x="20" y="220" width="310" height="145" as="geometry" />
+    </mxCell>
+    <mxCell id="st1_c3" value="3. Chronological Sequence&#xa;X = (x_1, x_2, ..., x_T)&#xa;• Strictly timestamp-ordered&#xa;• Indexed PostgreSQL query&#xa;Exact student trace" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st1">
+      <mxGeometry x="20" y="390" width="310" height="150" as="geometry" />
+    </mxCell>
+
+    <mxCell id="st2" value="Stage 2: Mathematical Encoding" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="450" y="90" width="350" height="780" as="geometry" />
+    </mxCell>
+    <mxCell id="st2_c1" value="1. Dual 2K Representation&#xa;Vector Dimension = 2 × K&#xa;• If a_t = 1 (Correct):&#xa;    Active Index = c_t&#xa;• If a_t = 0 (Incorrect):&#xa;    Active Index = c_t + K" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st2">
+      <mxGeometry x="20" y="60" width="310" height="165" as="geometry" />
+    </mxCell>
+    <mxCell id="st2_c2" value="2. Pedagogical Rationale&#xa;Separates practicing &amp; succeeding&#xa;from practicing &amp; failing into distinct&#xa;orthogonal dimensions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st2">
+      <mxGeometry x="20" y="250" width="310" height="155" as="geometry" />
+    </mxCell>
+    <mxCell id="st2_c3" value="3. Dense Embedding Layer&#xa;E ∈ R^(2K × d_emb)&#xa;Projects sparse 2K into continuous&#xa;latent space (d_emb = 64)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st2">
+      <mxGeometry x="20" y="430" width="310" height="145" as="geometry" />
+    </mxCell>
+
+    <mxCell id="st3" value="Stage 3: Deep LSTM Cell" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="850" y="90" width="360" height="780" as="geometry" />
+    </mxCell>
+    <mxCell id="st3_c1" value="1. Recurrent State Update&#xa;h_t = tanh(W_hh·h_(t-1) + W_xh·x_t + b_h)&#xa;• h_t ∈ R^d_hidden&#xa;• Preserves learning memory&#xa;• Cross-skill knowledge transfer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st3">
+      <mxGeometry x="20" y="60" width="320" height="165" as="geometry" />
+    </mxCell>
+    <mxCell id="st3_c2" value="2. Sigmoid Multi-Skill Output&#xa;y_t = σ(W_hy·h_t + b_y)&#xa;• Output vector y_t ∈ [0, 1]^K&#xa;• Continuous probability of correct&#xa;  response for each skill at t+1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st3">
+      <mxGeometry x="20" y="250" width="320" height="155" as="geometry" />
+    </mxCell>
+    <mxCell id="st3_c3" value="3. Optimization Objective&#xa;Loss = - ∑ [ a_t log(y_t) + (1-a_t) log(1-y_t) ]&#xa;• Binary Cross-Entropy (BCE)&#xa;• Backpropagation Through Time" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st3">
+      <mxGeometry x="20" y="430" width="320" height="145" as="geometry" />
+    </mxCell>
+
+    <mxCell id="st4" value="Stage 4: Downstream Pedagogical UI" style="swimlane;whiteSpace=wrap;html=1;startSize=26;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1260" y="90" width="350" height="780" as="geometry" />
+    </mxCell>
+    <mxCell id="st4_c1" value="1. Mastery Classification&#xa;• y_t ≥ 0.75: Mastered&#xa;• 0.50 ≤ y_t &lt; 0.75: Developing&#xa;• y_t &lt; 0.50: Needs Remediation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st4">
+      <mxGeometry x="20" y="60" width="310" height="165" as="geometry" />
+    </mxCell>
+    <mxCell id="st4_c2" value="2. Competency Radar Chart&#xa;• Multi-axis dynamic radar&#xa;• Real-time mastery visualizer&#xa;• Self-regulated learning feedback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st4">
+      <mxGeometry x="20" y="250" width="310" height="155" as="geometry" />
+    </mxCell>
+    <mxCell id="st4_c3" value="3. Remedial Lecture Links&#xa;• Auto-recommends review lessons&#xa;• Directly targets weak skill_ids&#xa;• Closes learning loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=12;fontStyle=0;fontSize=11.5;" vertex="1" parent="st4">
+      <mxGeometry x="20" y="430" width="310" height="145" as="geometry" />
+    </mxCell>
+
+    <!-- Stage Arrows -->
+    <mxCell id="e_s1_s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" source="st1" target="st2" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_s2_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" source="st2" target="st3" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_s3_s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" source="st3" target="st4" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

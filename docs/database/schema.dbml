@@ -1,0 +1,82 @@
+Enum user_role {
+  student
+  instructor
+  admin
+}
+Enum lesson_content_type {
+  video
+  document
+  text
+}
+
+Table users {
+  id uuid [pk]
+  name varchar(120) [not null]
+  email varchar(255) [not null, unique]
+  password_hash text [not null]
+  role user_role [not null, default: 'student']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+Table courses {
+  id uuid [pk]
+  instructor_id uuid [not null]
+  title varchar(200) [not null]
+  description text
+  is_published boolean [not null, default: false]
+  created_at timestamptz [not null]
+}
+Table lessons {
+  id uuid [pk]
+  course_id uuid [not null]
+  title varchar(200) [not null]
+  description text
+  content_type lesson_content_type [not null]
+  content_url text
+  position int [not null]
+  created_at timestamptz [not null]
+  indexes { (course_id, position) [unique] }
+}
+Table quizzes {
+  id uuid [pk]
+  lesson_id uuid [not null]
+  title varchar(200) [not null]
+  is_published boolean [not null, default: false]
+  created_at timestamptz [not null]
+}
+Table skills {
+  id uuid [pk]
+  code varchar(80) [not null, unique]
+  name varchar(200) [not null]
+  description text
+  created_at timestamptz [not null]
+}
+Table questions {
+  id uuid [pk]
+  quiz_id uuid [not null]
+  skill_id uuid [not null]
+  prompt text [not null]
+  options jsonb [not null]
+  correct_answer text [not null]
+  position int [not null]
+  indexes { (quiz_id, position) [unique] }
+}
+Table quiz_interactions {
+  id uuid [pk]
+  user_id uuid [not null]
+  question_id uuid [not null]
+  skill_id uuid [not null]
+  is_correct boolean [not null]
+  attempt_count int [not null]
+  created_at timestamptz [not null]
+}
+
+Ref: courses.instructor_id > users.id
+Ref: lessons.course_id > courses.id
+Ref: quizzes.lesson_id > lessons.id
+Ref: questions.quiz_id > quizzes.id
+Ref: questions.skill_id > skills.id
+Ref: quiz_interactions.user_id > users.id
+Ref: quiz_interactions.question_id > questions.id
+Ref: quiz_interactions.skill_id > skills.id
+Ref: quiz_interactions.(question_id, skill_id) > questions.(id, skill_id)
