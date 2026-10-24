@@ -10,7 +10,7 @@
 
 ---
 
-## 1. Cấu trúc Thư mục Dự án Chuẩn mực (Monorepo)
+## 1. Cấu trúc Thư mục Dự án 
 
 ```text
 Elearning-AI/
