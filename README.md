@@ -4,9 +4,9 @@
 > **Học phần:** Đồ án Chuyên ngành (ĐACN) ➡️ Đồ án Tốt nghiệp (ĐATN)  
 > **GVHD:** TS. Nguyễn Quốc Minh (Bộ môn Trí tuệ Nhân tạo - Khoa KH&KT Máy tính, ĐH Bách Khoa ĐHQG-HCM)  
 > **Sinh viên thực hiện:**
-> 1. Nguyễn Ngọc Sáng (2353046) - Trưởng nhóm & AI Lead
-> 2. Nguyễn Hữu Hào (2352296) - Backend & Database Lead
-> 3. Phạm Quang Tuấn (2353275) - Frontend & UI/UX Lead
+> 1. Nguyễn Ngọc Sáng (2353046)
+> 2. Nguyễn Hữu Hào (2352296)
+> 3. Phạm Quang Tuấn (2353275)
 
 ---
 
