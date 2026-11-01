@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2760" height="1760" viewBox="0 0 2760 1760">
+<defs>
+  <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#12365a"/><stop offset="1" stop-color="#17627a"/></linearGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#19324d" flood-opacity=".12"/></filter>
+  <style>
+    .title { font: 700 38px 'Segoe UI', Arial, sans-serif; fill: #fff; letter-spacing: 1px; }
+    .subtitle { font: 400 19px 'Segoe UI', Arial, sans-serif; fill: #d7e7f1; }
+    .table { filter: url(#shadow); }
+    .box { fill: #fff; stroke: #cbd7e2; stroke-width: 2; rx: 12; }
+    .head { fill: #1b5278; }
+    .head-text { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #fff; }
+    .field { font: 400 19px 'Segoe UI', Arial, sans-serif; fill: #203448; }
+    .tag { font: 700 17px 'Segoe UI', Arial, sans-serif; fill: #17627a; }
+    .small { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #42566b; }
+    .panel-head { font: 700 21px 'Segoe UI', Arial, sans-serif; fill: #1b5278; }
+  </style>
+</defs>
+<rect width="2760" height="1760" fill="#f2f6fa"/>
+<rect width="2760" height="112" fill="url(#top)"/>
+<text x="44" y="52" class="title">E-LEARNING AI — DATABASE ERD V2</text>
+<text x="46" y="85" class="subtitle">PostgreSQL · academic scheduling · attendance PIN · session-linked AI quiz telemetry</text>
+
+<!-- Row 1: users, semesters, catalog, knowledge components -->
+<g class="table" transform="translate(35 140)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">users</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field">name, email (unique)</text>
+  <text x="20" y="132" class="field">role: student | instructor | admin</text>
+  <text x="20" y="159" class="field">password_hash</text>
+  <text x="20" y="186" class="field">created_at, updated_at</text>
+</g>
+<g class="table" transform="translate(715 140)">
+  <rect class="box" width="630" height="235"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">semesters</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field">code: unique (e.g. HK261)</text>
+  <text x="20" y="132" class="field">name</text>
+  <text x="20" y="159" class="field">start_date, end_date</text>
+  <text x="20" y="186" class="field">is_active: at most one active</text>
+  <text x="20" y="213" class="field">created_at</text>
+</g>
+<g class="table" transform="translate(1395 140)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">courses</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  instructor_id → users</tspan></text>
+  <text x="20" y="132" class="field">title, description</text>
+  <text x="20" y="159" class="field">is_published</text>
+  <text x="20" y="186" class="field">created_at</text>
+</g>
+<g class="table" transform="translate(2075 140)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">skills</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field">code: unique (e.g. DSA-LINKEDLIST)</text>
+  <text x="20" y="132" class="field">name, description</text>
+  <text x="20" y="159" class="field">Knowledge Component</text>
+  <text x="20" y="186" class="field">created_at</text>
+</g>
+
+<!-- Row 2: class offerings and schedule -->
+<g class="table" transform="translate(35 535)">
+  <rect class="box" width="630" height="260"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">course_classes</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  course_id, semester_id</tspan></text>
+  <text x="20" y="132" class="field"><tspan class="tag">FK</tspan><tspan>  instructor_id → users</tspan></text>
+  <text x="20" y="159" class="field">class_code (unique per semester)</text>
+  <text x="20" y="186" class="field">max_capacity, default_room</text>
+  <text x="20" y="213" class="field">Capacity enforced on enrollment</text>
+  <text x="20" y="240" class="field">created_at</text>
+</g>
+<g class="table" transform="translate(715 535)">
+  <rect class="box" width="630" height="235"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">enrollments</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  class_id → course_classes</tspan></text>
+  <text x="20" y="132" class="field"><tspan class="tag">FK</tspan><tspan>  user_id → users</tspan></text>
+  <text x="20" y="159" class="field">status: enrolled | dropped</text>
+  <text x="20" y="186" class="field">enrolled_at, final_grade</text>
+  <text x="20" y="213" class="field">Unique (class_id, user_id)</text>
+</g>
+<g class="table" transform="translate(1395 535)">
+  <rect class="box" width="630" height="335"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">course_sessions</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  class_id → course_classes</tspan></text>
+  <text x="20" y="132" class="field">session_number: 1–15</text>
+  <text x="20" y="159" class="field">title, session_date</text>
+  <text x="20" y="186" class="field">start_time, end_time, room</text>
+  <text x="20" y="213" class="field">attendance_code: 4 digits</text>
+  <text x="20" y="240" class="field">is_attendance_open</text>
+  <text x="20" y="267" class="field">attendance_expires_at</text>
+  <text x="20" y="294" class="field">Unique (class_id, session_number)</text>
+  <text x="20" y="321" class="field">One session row per scheduled class</text>
+</g>
+<g class="table" transform="translate(2075 535)">
+  <rect class="box" width="630" height="235"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">session_materials</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  session_id → course_sessions</tspan></text>
+  <text x="20" y="132" class="field">title, file_url</text>
+  <text x="20" y="159" class="field">material_type: slide | code | video</text>
+  <text x="20" y="186" class="field">position</text>
+  <text x="20" y="213" class="field">created_at</text>
+</g>
+
+<!-- Row 3: attendance and assessment -->
+<g class="table" transform="translate(35 930)">
+  <rect class="box" width="630" height="260"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">attendance_records</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  session_id, user_id</tspan></text>
+  <text x="20" y="132" class="field">status: present | absent | late | excused</text>
+  <text x="20" y="159" class="field">checkin_time, method: pin | qr | manual</text>
+  <text x="20" y="186" class="field">note, created_at</text>
+  <text x="20" y="213" class="field">Unique (session_id, user_id)</text>
+  <text x="20" y="240" class="field">Missing row counts as not attended</text>
+</g>
+<g class="table" transform="translate(715 930)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">quizzes</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  session_id → course_sessions</tspan></text>
+  <text x="20" y="132" class="field">lesson_id: nullable legacy link</text>
+  <text x="20" y="159" class="field">title, is_published</text>
+  <text x="20" y="186" class="field">created_at</text>
+</g>
+<g class="table" transform="translate(1395 930)">
+  <rect class="box" width="630" height="235"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">questions</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  quiz_id, skill_id</tspan></text>
+  <text x="20" y="132" class="field">prompt, options: JSONB</text>
+  <text x="20" y="159" class="field">correct_answer: private answer key</text>
+  <text x="20" y="186" class="field">position</text>
+  <text x="20" y="213" class="field">Unique (quiz_id, position)</text>
+</g>
+<g class="table" transform="translate(2075 930)">
+  <rect class="box" width="630" height="260"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">quiz_interactions</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  user_id, session_id</tspan></text>
+  <text x="20" y="132" class="field"><tspan class="tag">FK</tspan><tspan>  question_id, skill_id</tspan></text>
+  <text x="20" y="159" class="field">is_correct, attempt_count</text>
+  <text x="20" y="186" class="field">created_at</text>
+  <text x="20" y="213" class="field">Composite question + skill FK</text>
+  <text x="20" y="240" class="field">AI knowledge-tracing event stream</text>
+</g>
+
+<!-- Row 4: supporting entities and design rules -->
+<g class="table" transform="translate(35 1325)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">attendance_pin_attempts</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  session_id, user_id</tspan></text>
+  <text x="20" y="132" class="field">attempted_at, succeeded</text>
+  <text x="20" y="159" class="field">Five failed tries / 15 minutes</text>
+  <text x="20" y="186" class="field">Rate-limit audit trail</text>
+</g>
+<g class="table" transform="translate(715 1325)">
+  <rect class="box" width="630" height="210"/>
+  <path class="head" d="M12 0H618Q630 0 630 12V48H0V12Q0 0 12 0Z"/>
+  <text x="20" y="32" class="head-text">lessons (legacy)</text>
+  <text x="20" y="78" class="field"><tspan class="tag">PK</tspan><tspan>  id: UUID</tspan></text>
+  <text x="20" y="105" class="field"><tspan class="tag">FK</tspan><tspan>  course_id → courses</tspan></text>
+  <text x="20" y="132" class="field">title, content_type, content_url</text>
+  <text x="20" y="159" class="field">position, created_at</text>
+  <text x="20" y="186" class="field">Retained for v1 compatibility</text>
+</g>
+<g class="table" transform="translate(1395 1325)">
+  <rect class="box" width="630" height="300"/>
+  <rect x="0" y="0" width="630" height="48" rx="12" fill="#e3eff5"/>
+  <text x="20" y="32" class="panel-head">KEY RELATIONSHIPS (1:N)</text>
+  <text x="20" y="78" class="small">Semester / course / instructor → course classes</text>
+  <text x="20" y="108" class="small">Course class → enrollments and 15 sessions</text>
+  <text x="20" y="138" class="small">Session → materials, attendance, quizzes</text>
+  <text x="20" y="168" class="small">Quiz → questions → quiz interactions</text>
+  <text x="20" y="198" class="small">Skill → questions and attributed telemetry</text>
+  <text x="20" y="228" class="small">User → enrollments, check-ins, quiz events</text>
+  <text x="20" y="258" class="small">Session → PIN attempt audit records</text>
+  <text x="20" y="286" class="small">Owned session data cascades on delete</text>
+</g>
+<g class="table" transform="translate(2075 1325)">
+  <rect class="box" width="630" height="300"/>
+  <rect x="0" y="0" width="630" height="48" rx="12" fill="#e3eff5"/>
+  <text x="20" y="32" class="panel-head">OPERATIONAL RULES</text>
+  <text x="20" y="78" class="small">PIN: cryptographic 4-digit value, 10–15 min</text>
+  <text x="20" y="108" class="small">Check-in requires active enrollment</text>
+  <text x="20" y="138" class="small">Expired PIN is rejected and auto-closed</text>
+  <text x="20" y="168" class="small">Correct answer never leaves the server</text>
+  <text x="20" y="198" class="small">Excused sessions excluded from rate denominator</text>
+  <text x="20" y="228" class="small">Capacity checked under a class-row lock</text>
+  <text x="20" y="258" class="small">V1 quiz history preserved during upgrade</text>
+  <text x="20" y="286" class="small">No learner API returns attendance PINs</text>
+</g>
+
+<text x="40" y="1690" class="small">PK = primary key · FK = foreign key · UQ = unique · Session schedule index: (class_id, session_date, start_time) · Attendance unique key: (session_id, user_id)</text>
+</svg>

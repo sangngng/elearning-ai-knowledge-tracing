@@ -1,158 +1,131 @@
-# DATABASE DATA DICTIONARY (E-LEARNING SYSTEM)
+# Database Dictionary — E-Learning AI v2
 
-> **Database Engine:** PostgreSQL 15+ (with `pgcrypto` extension)  
-> **Schema Designer:** Nguyen Huu Hao  
-> **Topic:** E-Learning System with AI Knowledge Tracing  
+**Engine:** PostgreSQL 15+ with `pgcrypto`. **Scope:** semesters, course offerings, schedules, learning materials, attendance, quizzes, and AI knowledge-tracing telemetry.
 
----
-
-## 1. Entity Relationship Overview
-The relational database models core educational entities and provides high-resolution telemetry logging for the Knowledge Tracing AI engine.
+## Entity relationships
 
 ```mermaid
 erDiagram
-    users ||--o{ courses : "instructs"
-    users ||--o{ quiz_interactions : "performs"
-    courses ||--|{ lessons : "contains"
-    lessons ||--o{ quizzes : "assesses"
-    quizzes ||--|{ questions : "contains"
-    skills ||--o{ questions : "categorizes"
-    questions ||--o{ quiz_interactions : "logged in"
-    skills ||--o{ quiz_interactions : "attributed to"
-
-    users {
-        uuid id PK
-        varchar name
-        varchar email UK
-        text password_hash
-        user_role role
-        timestamptz created_at
-    }
-
-    courses {
-        uuid id PK
-        uuid instructor_id FK
-        varchar title
-        text description
-        boolean is_published
-        timestamptz created_at
-    }
-
-    lessons {
-        uuid id PK
-        uuid course_id FK
-        varchar title
-        lesson_content_type content_type
-        text content_url
-        integer position
-    }
-
-    quizzes {
-        uuid id PK
-        uuid lesson_id FK
-        varchar title
-        boolean is_published
-    }
-
-    skills {
-        uuid id PK
-        varchar code UK
-        varchar name
-        text description
-    }
-
-    questions {
-        uuid id PK
-        uuid quiz_id FK
-        uuid skill_id FK
-        text prompt
-        jsonb options
-        text correct_answer
-        integer position
-    }
-
-    quiz_interactions {
-        uuid id PK
-        uuid user_id FK
-        uuid question_id FK
-        uuid skill_id FK
-        boolean is_correct
-        integer attempt_count
-        timestamptz created_at
-    }
+  users ||--o{ courses : teaches
+  users ||--o{ course_classes : instructs
+  semesters ||--o{ course_classes : contains
+  courses ||--o{ course_classes : opens
+  course_classes ||--o{ enrollments : has
+  users ||--o{ enrollments : joins
+  course_classes ||--o{ course_sessions : schedules
+  course_sessions ||--o{ session_materials : provides
+  course_sessions ||--o{ attendance_records : records
+  users ||--o{ attendance_records : checks_in
+  course_sessions ||--o{ quizzes : assesses
+  quizzes ||--o{ questions : contains
+  skills ||--o{ questions : maps
+  users ||--o{ quiz_interactions : answers
+  course_sessions ||--o{ quiz_interactions : groups
+  questions ||--o{ quiz_interactions : emits
+  course_sessions ||--o{ attendance_pin_attempts : limits
+  users ||--o{ attendance_pin_attempts : makes
+  courses ||--o{ lessons : legacy_content
+  lessons o|--o{ quizzes : legacy_link
 ```
 
----
+## Table specifications
 
-## 2. Table Specifications
+### `users`
 
-### 2.1. `users`
-Stores system accounts with Role-Based Access Control (RBAC).
-- `id` (UUID, PK): Auto-generated unique identifier (`gen_random_uuid()`).
-- `name` (VARCHAR(120), NOT NULL): Full name of the user.
-- `email` (VARCHAR(255), NOT NULL, UNIQUE): Institutional or personal email.
-- `password_hash` (TEXT, NOT NULL): Encrypted password using Bcrypt/Argon2.
-- `role` (ENUM: `'student'`, `'instructor'`, `'admin'`): Access control tier.
-- `created_at`, `updated_at` (TIMESTAMPTZ).
+System accounts. `role` is `student`, `instructor`, or `admin`. Self-registration creates students; an administrator provisions staff roles. `password_hash` stores a bcrypt hash, never a clear-text password.
 
-### 2.2. `courses`
-Represents an academic curriculum or subject.
-- `id` (UUID, PK): Course identifier.
-- `instructor_id` (UUID, FK -> `users.id`): Assigned instructor.
-- `title` (VARCHAR(200), NOT NULL): Course title.
-- `description` (TEXT): Syllabus summary.
-- `is_published` (BOOLEAN, DEFAULT false): Visibility flag.
+### `semesters`
 
-### 2.3. `lessons`
-Individual learning modules under a course.
-- `id` (UUID, PK): Lesson identifier.
-- `course_id` (UUID, FK -> `courses.id`, ON DELETE CASCADE).
-- `title` (VARCHAR(200), NOT NULL).
-- `content_type` (ENUM: `'video'`, `'document'`, `'text'`).
-- `content_url` (TEXT): Video stream URI or PDF storage path.
-- `position` (INTEGER, NOT NULL): Ordinal index in the course structure.
-- **Constraint:** `UNIQUE (course_id, position)` ensures strict lesson ordering.
+| Field | Rule / meaning |
+|---|---|
+| `id` | UUID primary key |
+| `code` | Unique short key, e.g. `HK261` |
+| `name` | Display name, e.g. “Học kỳ 1 năm học 2026-2027” |
+| `start_date`, `end_date` | Semester date range; start must be on or before end |
+| `is_active` | Partial unique index permits at most one active semester |
 
-### 2.4. `quizzes`
-Assessment checkpoint associated with a lesson.
-- `id` (UUID, PK): Quiz identifier.
-- `lesson_id` (UUID, FK -> `lessons.id`, ON DELETE CASCADE).
-- `title` (VARCHAR(200), NOT NULL).
-- `is_published` (BOOLEAN).
+### `courses`
 
-### 2.5. `skills` (Knowledge Components - KCs)
-Domain taxonomy nodes representing granular learning objectives.
-- `id` (UUID, PK): Skill identifier.
-- `code` (VARCHAR(80), NOT NULL, UNIQUE): Unique standard code (e.g., `CTDL-CAY-01`).
-- `name` (VARCHAR(200), NOT NULL): Human-readable title (e.g., "Binary Search Tree Traversals").
-- `description` (TEXT): Pedagogical scope.
+Course catalog row. `instructor_id` refers to the course owner; `is_published` controls catalog visibility.
 
-### 2.6. `questions`
-Multiple-choice questions linked to specific skills.
-- `id` (UUID, PK): Question identifier.
-- `quiz_id` (UUID, FK -> `quizzes.id`, ON DELETE CASCADE).
-- `skill_id` (UUID, FK -> `skills.id`, ON DELETE RESTRICT).
-- `prompt` (TEXT, NOT NULL): Question stem.
-- `options` (JSONB, NOT NULL): Serialized array of choices `['A...', 'B...', 'C...', 'D...']`.
-- `correct_answer` (TEXT, NOT NULL): Matching answer identifier.
-- `position` (INTEGER, NOT NULL): Question sequence in the quiz.
-- **Constraints:** `UNIQUE (quiz_id, position)`, `UNIQUE (id, skill_id)`.
+### `course_classes`
 
-### 2.7. `quiz_interactions` (Core Telemetry for Knowledge Tracing)
-Captures every single response event in chronological order.
-- `id` (UUID, PK): Record identifier.
-- `user_id` (UUID, FK -> `users.id`, ON DELETE CASCADE).
-- `question_id` (UUID, FK -> `questions.id`, ON DELETE CASCADE).
-- `skill_id` (UUID, FK -> `skills.id`, ON DELETE RESTRICT).
-- `is_correct` (BOOLEAN, NOT NULL): True if answer was correct ($a_t = 1$), false otherwise ($a_t = 0$).
-- `attempt_count` (INTEGER, NOT NULL): Retake counter.
-- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT now()): High-precision event timestamp.
+An actual course offering in a semester. `course_id` cascades when the course is deleted; `semester_id` and `instructor_id` use `RESTRICT`. `(semester_id, class_code)` is unique. `max_capacity` must be positive. A trigger locks the class row and rejects concurrent enrollment that exceeds capacity.
 
-### 2.8. Optimized Indexes
-```sql
-CREATE INDEX lessons_course_position_idx ON lessons(course_id, position);
-CREATE INDEX questions_quiz_position_idx ON questions(quiz_id, position);
-CREATE INDEX quiz_interactions_user_skill_time_idx ON quiz_interactions(user_id, skill_id, created_at DESC);
-CREATE INDEX quiz_interactions_question_attempt_idx ON quiz_interactions(user_id, question_id, attempt_count DESC);
-```
-These composite indexes ensure $O(\log N)$ extraction speeds when building sequential student interaction histories $X_{1:t}$ for real-time model inference.
+### `enrollments`
+
+Maps a student to a class. `status` is `enrolled` or `dropped`; `UNIQUE (class_id, user_id)` allows a dropped student to re-enroll without erasing the original row. `final_grade` is nullable and, when present, must be 0–100. Class/user deletion cascades.
+
+### `course_sessions`
+
+Schedule rows numbered 1–15 per class (`UNIQUE (class_id, session_number)`). Each session has a date, start/end time, room, and temporary attendance state. End time must be later than start time. `class_id` cascades to sessions. The bulk API creates all 15 numbered sessions in one transaction.
+
+Attendance fields:
+
+- `attendance_code`: nullable four-digit PIN; present only while open.
+- `is_attendance_open`: must agree with whether code and expiry are set.
+- `attendance_expires_at`: timestamp after which check-in is rejected.
+
+PINs use a cryptographic random-number generator. The opening API accepts a 10–15 minute duration (default 10), returns the code to the assigned instructor/admin only, and clears it on close/expiry. The server sweeps expired sessions every 15 seconds, and check-in also checks expiry directly.
+
+### `session_materials`
+
+Materials linked to a session. `material_type` is `slide`, `code`, or `video`; `(session_id, position)` sets display order. Deleting the session cascades.
+
+### `attendance_records`
+
+One row per student/session (`UNIQUE (session_id, user_id)`). `status` is `present`, `absent`, `late`, or `excused`; `method` is `pin`, `qr`, or `manual`. Present/late records require a timestamp and method. Session/user deletion cascades. Missing records count as not attended in the aggregate.
+
+### `attendance_pin_attempts`
+
+Records PIN validation attempts to limit guessing. Five failed attempts for one student/session within 15 minutes return HTTP 429. Attempts cascade with their session/user.
+
+### `quizzes`
+
+New quizzes require a `session_id`, so each assessment belongs to a class session. `lesson_id` remains nullable for v1 compatibility. Existing quizzes upgraded from v1 have a nullable session link until explicitly mapped; a not-valid check constraint preserves those rows while requiring new quizzes to link a session.
+
+### `skills`
+
+Knowledge Components; `code` is unique (example: `DSA-LINKEDLIST`).
+
+### `questions`
+
+Question prompt and JSONB options associated with a quiz and skill. `position` is unique within a quiz. `correct_answer` is a private server-side answer key; learner-facing quiz responses omit it. `(id, skill_id)` supports a composite FK that keeps telemetry skill attribution consistent.
+
+### `quiz_interactions`
+
+One response event per attempt: `user_id`, `session_id`, `question_id`, `skill_id`, `is_correct`, `attempt_count`, and `created_at`. The composite `(question_id, skill_id)` FK prevents the telemetry skill from diverging from its question. Historical v1 events retain a nullable `session_id`; a not-valid check constraint preserves those rows while requiring new events to include a session.
+
+### `lessons` (legacy)
+
+Retained for the original lesson API and historical quiz links. New quizzes are tied to `course_sessions`.
+
+### `schema_version`
+
+Records installed schema version; v2 inserts version `2` idempotently after its tables, constraints, and indexes.
+
+## Delete behavior
+
+- `course_classes → course_sessions → session_materials / attendance_records / quizzes / quiz_interactions / attendance_pin_attempts`: cascade.
+- `course_classes → enrollments`: cascade.
+- `users → enrollments / attendance_records / quiz_interactions / attendance_pin_attempts`: cascade.
+- `courses → course_classes / lessons`: cascade.
+- Semester and instructor references use `RESTRICT` to avoid orphaning active academic offerings.
+- Skill references use `RESTRICT`; question/session deletion cascades through quiz interactions.
+
+## Indexes
+
+- Schedule: `(class_id, session_date, start_time)`.
+- Attendance: unique `(session_id, user_id)` and lookup `(user_id, session_id)`.
+- Enrollment counts: `(class_id, status)` and `(user_id, status)`.
+- Session materials: `(session_id, position)`.
+- Telemetry: `(user_id, skill_id, created_at)`, `(session_id, user_id, created_at)`, and `(user_id, question_id, attempt_count)`.
+- Failed-PIN rate limit: `(session_id, user_id, attempted_at DESC)` for unsuccessful attempts.
+
+## Attendance rate definition
+
+Completed sessions are sessions whose scheduled end time has passed in `Asia/Ho_Chi_Minh`. `present` and `late` count as attended; `excused` sessions are removed from the denominator. Overall rate is attended check-ins divided by expected non-excused student/session occurrences. Missing records count as not attended.
+
+## Upgrade from v1
+
+Back up the database and run `psql -v ON_ERROR_STOP=1 -d <database> -f backend/db/schema.sql`. The script is rerunnable and adds new tables/columns without deleting existing data. V1 quizzes and quiz interactions receive nullable `session_id` fields so history is retained; map old quizzes to a class session before accepting v2 submissions for them.

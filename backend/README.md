@@ -1,23 +1,31 @@
-# E-Learning AI Backend
+# E-Learning AI Backend (Database v2)
 
-Express and TypeScript API backed by PostgreSQL.
+Express/TypeScript API for PostgreSQL. Database v2 adds semesters, course classes, enrollments, 15-session schedules, attendance PINs, session materials, and session-linked quiz telemetry.
 
-## Setup
+## Database setup
 
-1. Create a PostgreSQL database named `elearning`.
-2. Run `db/schema.sql` against that database.
-3. Copy `.env.example` to `.env`, then set `DATABASE_URL` and a private random `JWT_SECRET`.
-4. From this folder, install dependencies with `npm install`, then start the API with `npm run dev`.
+- For a new database, create a PostgreSQL database and run `db/schema.sql`.
+- For an existing v1 database, back up first, then run the same script. It is rerunnable and preserves legacy lessons, quizzes, and quiz interactions. Existing quizzes/interactions keep a nullable `session_id` until they are associated with a v2 session; new quiz and telemetry rows are session-linked.
+- Copy `.env.example` to `.env` and set `DATABASE_URL` and a long, private `JWT_SECRET`.
 
-The API defaults to `http://localhost:8080`. The `GET /health` endpoint does not require a database connection.
+Install from this folder with `npm ci`; start with `npm run dev`. The API defaults to `http://localhost:8080`.
 
-## Endpoints
+## Authentication
 
-- `POST /api/auth/register` — body: `{ "name", "email", "password" }`; new accounts are students.
-- `POST /api/auth/login` — body: `{ "email", "password" }`; returns a one-day JWT.
-- `GET /api/lessons` — JWT required; optional `?courseId=...` filter.
-- `POST /api/quizzes/:quizId/submit` — JWT required; body: `{ "answers": [{ "questionId": "...", "answer": "..." }] }`.
+Registration and login return a one-day JWT. Send it as `Authorization: Bearer <token>`. Registration creates student accounts. Instructors and administrators must be provisioned with their roles by an administrator.
 
-Pass tokens as `Authorization: Bearer <token>`. Quiz submissions record each answer in `quiz_interactions`, including correctness, skill, and attempt number.
+## Main endpoints
 
-Do not share `.env`; use `.env.example` as the template.
+- `GET /api/schedule?semesterId=<uuid>` — current user's enrolled/taught class sessions, ordered by date and time.
+- `GET /api/classes/:classId/sessions` — the class's numbered sessions and materials; PIN is visible only to its instructor/admin while active.
+- `POST /api/classes/:classId/enroll` — student enrollment; the database capacity trigger serializes concurrent joins.
+- `POST /api/classes/:classId/sessions` — instructor creates one session (`sessionNumber` 1–15).
+- `POST /api/classes/:classId/sessions/bulk` — instructor creates exactly sessions 1 through 15 transactionally.
+- `POST /api/sessions/:sessionId/attendance/open` — instructor opens PIN check-in for 10–15 minutes; defaults to 10. Returns the four-digit PIN and expiry.
+- `POST /api/sessions/:sessionId/attendance/close` — instructor closes check-in and clears the PIN.
+- `POST /api/sessions/:sessionId/attendance/check-in` — enrolled student body: `{ "attendanceCode": "4829" }`. PIN expires at the database expiry time and is rate-limited to five failed attempts per 15 minutes.
+- `GET /api/classes/:classId/attendance/summary` — instructor view of capacity, enrolled count, completed sessions, overall attendance rate, and per-student rates. Excused sessions are excluded from the denominator.
+- `GET /api/sessions/:sessionId/quizzes` — published session quiz/questions; never returns `correct_answer`.
+- `POST /api/quizzes/:quizId/submit` — records per-question correctness, skill, attempt count, and session for AI telemetry.
+
+See `db/schema.dbml` for the ERD source and `db/schema.sql` for constraints, cascading deletes, and indexes.

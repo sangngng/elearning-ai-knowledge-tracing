@@ -10,7 +10,8 @@ const required = (name: string, fallback?: string) => {
 
 export const env = {
   port: Number(process.env.PORT ?? 8080),
-  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://localhost:5173')
+    .split(',').map((origin) => origin.trim()).filter(Boolean),
   databaseUrl: required('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/elearning'),
   jwtSecret: required('JWT_SECRET'),
 }
