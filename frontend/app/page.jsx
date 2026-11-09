@@ -10,11 +10,15 @@ import {
 } from './data/dsaCourseData';
 
 export default function BK_LMS_Portal() {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [currentUser, setCurrentUser] = useState(null); // { role: 'instructor'|'student', name, code, email, title }
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   // Navigation View: 'home' (Trang chủ), 'my-courses' (Các khoá học của tôi), 'course' (CO2003 Inside)
   const [currentView, setCurrentView] = useState('home');
-
-  // Role: 'instructor' (TS. Nguyễn Quốc Minh) or 'student' (Nguyễn Ngọc Sáng - 2353046)
-  const [role, setRole] = useState('instructor');
 
   // Course secondary navigation tab: 'sessions', 'attendance', 'timetable', 'participants', 'analytics', 'radar'
   const [courseTab, setCourseTab] = useState('sessions');
@@ -31,7 +35,7 @@ export default function BK_LMS_Portal() {
   const [roster, setRoster] = useState(
     ENROLLED_STUDENTS.map((s, idx) => ({
       ...s,
-      session3Status: idx === 0 ? 'absent' : idx === 6 ? 'late' : idx === 7 ? 'excused' : 'present',
+      session3Status: idx === 0 ? 'absent' : idx === 4 ? 'late' : idx === 6 ? 'excused' : 'present',
     }))
   );
 
@@ -45,11 +49,46 @@ export default function BK_LMS_Portal() {
   const [courseSearch, setCourseSearch] = useState('');
   const [semesterExpanded, setSemesterExpanded] = useState(true);
 
-  // Active user profile
-  const currentUser =
-    role === 'instructor'
-      ? { name: 'TS. Nguyễn Quốc Minh', code: 'GV004318', roleTitle: 'Giảng viên', email: 'nqminh@hcmut.edu.vn' }
-      : { name: 'Nguyễn Ngọc Sáng', code: '2353046', roleTitle: 'Sinh viên', email: 'sang.nguyen2353046@hcmut.edu.vn' };
+  // Handle Login
+  const handleLoginAs = (roleType) => {
+    if (roleType === 'instructor') {
+      setCurrentUser({
+        role: 'instructor',
+        name: 'TS. Nguyễn Văn A',
+        code: 'CB001001',
+        title: 'Giảng viên',
+        email: 'a.nguyen@hcmut.edu.vn',
+        dept: 'Bộ môn Khoa học Máy tính',
+      });
+    } else {
+      setCurrentUser({
+        role: 'student',
+        name: 'Nguyễn Văn B',
+        code: '2110001',
+        title: 'Sinh viên',
+        email: 'b.nguyen@hcmut.edu.vn',
+        dept: 'Lớp CC01 - Khóa 2021',
+      });
+    }
+    setIsAuthenticated(true);
+    setCurrentView('home');
+  };
+
+  const handleCustomLogin = (e) => {
+    e.preventDefault();
+    if (loginUsername.toLowerCase().includes('gv') || loginUsername.toLowerCase().includes('admin')) {
+      handleLoginAs('instructor');
+    } else {
+      handleLoginAs('student');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setUserMenuOpen(false);
+    setCurrentView('home');
+  };
 
   // Countdown timer for PIN code
   useEffect(() => {
@@ -78,7 +117,7 @@ export default function BK_LMS_Portal() {
     e.preventDefault();
     if (studentPinInput.trim() === pinCode) {
       setRoster((prev) =>
-        prev.map((s) => (s.studentId === '2353046' ? { ...s, session3Status: 'present' } : s))
+        prev.map((s) => (s.studentId === '2110001' ? { ...s, session3Status: 'present' } : s))
       );
       setPinFeedback({ success: true, message: 'Điểm danh Buổi 3 thành công! Trạng thái: Có mặt (Present).' });
       setTimeout(() => {
@@ -123,39 +162,39 @@ export default function BK_LMS_Portal() {
     setQuizScore(null);
   };
 
-  // Other realistic courses for HK261 list
+  // Normal course directory for HK261
   const coursesData = [
     {
       code: '79738_CO3029_004352_CLC',
-      title: 'Data Mining (CO3029)_Võ Ngọc Tú [CLC_HK261] [CC01]',
+      title: 'Data Mining (CO3029)_Trần Văn C [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'teal',
       icon: '📊',
-      isPilot: false,
+      isTarget: false,
     },
     {
       code: '79738_CO3061_004318_CLC',
-      title: 'Introduction to Artificial Intelligence (CO3061)_NGUYỄN QUỐC MINH [CLC_HK261] [CC01]',
+      title: 'Introduction to Artificial Intelligence (CO3061)_Lê Văn D [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'cyan',
       icon: '🤖',
-      isPilot: false,
+      isTarget: false,
     },
     {
       code: '79738_CO2003_004318_CLC',
-      title: 'Cấu trúc Dữ liệu và Giải thuật (CO2003)_NGUYỄN QUỐC MINH [CLC_HK261] [CC01]',
+      title: 'Cấu trúc Dữ liệu và Giải thuật (CO2003)_Nguyễn Văn A [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'cyan',
       icon: '🌲',
-      isPilot: true,
+      isTarget: true,
     },
     {
       code: '79738_CO4029_004318_CLC',
-      title: 'Specialized Project (CO4029)_NGUYỄN QUỐC MINH [CLC_HK261] [CC28]',
+      title: 'Specialized Project (CO4029)_Nguyễn Văn A [CLC_HK261] [CC28]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'purple',
       icon: '🎓',
-      isPilot: false,
+      isTarget: false,
     },
   ];
 
@@ -165,10 +204,111 @@ export default function BK_LMS_Portal() {
       c.code.toLowerCase().includes(courseSearch.toLowerCase())
   );
 
+  // If user is not authenticated, show official HCMUT CAS Login Page
+  if (!isAuthenticated) {
+    return (
+      <div className="bkel-login-wrapper">
+        <header className="bkel-login-topbar">
+          <div className="bkel-login-brand">
+            <img src="/bkel-logo.png" alt="BK Logo" style={{ height: '36px' }} />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '0.2px' }}>
+                TRƯỜNG ĐẠI HỌC BÁCH KHOA - ĐHQG-HCM
+              </div>
+              <div style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.85)' }}>
+                Dịch vụ Xác thực Tập trung (Central Authentication Service - CAS)
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>
+            Hệ thống Quản lý Học tập BK-LMS
+          </div>
+        </header>
+
+        <div className="bkel-login-container">
+          <div className="bkel-login-card">
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <img src="/bkel-logo.png" alt="BK Logo" style={{ height: '64px', margin: '0 auto' }} />
+            </div>
+            <h1 className="bkel-login-title">ĐĂNG NHẬP BK-LMS</h1>
+            <p className="bkel-login-subtitle">
+              Sử dụng tài khoản Bách Khoa (HCMUT Account) để truy cập hệ thống
+            </p>
+
+            <form onSubmit={handleCustomLogin}>
+              <div className="bkel-form-group">
+                <label className="bkel-form-label">Tên đăng nhập (Username / MSSV)</label>
+                <input
+                  type="text"
+                  className="bkel-form-input"
+                  placeholder="Ví dụ: 2110001 hoặc gv_nguyenvana"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="bkel-form-group">
+                <label className="bkel-form-label">Mật khẩu (Password)</label>
+                <input
+                  type="password"
+                  className="bkel-form-input"
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12.5px', color: '#64748b', marginBottom: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input type="checkbox" defaultChecked /> Ghi nhớ đăng nhập
+                </label>
+                <a href="#forgot" onClick={(e) => e.preventDefault()} style={{ color: '#008299' }}>
+                  Quên mật khẩu?
+                </a>
+              </div>
+
+              <button type="submit" className="bkel-login-btn-primary">
+                Đăng nhập (Log in)
+              </button>
+            </form>
+
+            {/* Quick Demo Authentication Selectors */}
+            <div className="bkel-quick-login-box">
+              <div className="bkel-quick-login-label">Hoặc đăng nhập nhanh bằng tài khoản mẫu:</div>
+              <button
+                type="button"
+                className="bkel-quick-role-btn"
+                onClick={() => handleLoginAs('instructor')}
+              >
+                <span>👨‍🏫 Giảng viên: <strong>TS. Nguyễn Văn A</strong></span>
+                <span style={{ fontSize: '11px', color: '#008299' }}>Vào quyền GV →</span>
+              </button>
+              <button
+                type="button"
+                className="bkel-quick-role-btn"
+                onClick={() => handleLoginAs('student')}
+              >
+                <span>👨‍🎓 Sinh viên: <strong>Nguyễn Văn B (2110001)</strong></span>
+                <span style={{ fontSize: '11px', color: '#008299' }}>Vào quyền SV →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <footer style={{ background: '#343a40', color: '#adb5bd', fontSize: '12px', textAlign: 'center', padding: '16px' }}>
+          Copyright 2007-2026 BKEL - Phát triển dựa trên Moodle • Trường Đại học Bách Khoa - ĐHQG-HCM
+        </footer>
+      </div>
+    );
+  }
+
+  // Authenticated Portal
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* =====================================================================
-          1. TOP NAVBAR (#008299 HCMUT CYAN)
+          1. TOP NAVBAR (#008299 HCMUT CYAN) - CLEAN, NO INLINE ROLE SWITCHER
           ===================================================================== */}
       <header className="bkel-navbar">
         <div className="bkel-navbar-left">
@@ -180,7 +320,6 @@ export default function BK_LMS_Portal() {
               setCurrentView('home');
             }}
           >
-            {/* Real BKeL Diamond Monogram Logo */}
             <img src="/bkel-logo.png" alt="BK Logo" className="bkel-logo-img" />
             <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.3px' }}>BK-LMS</span>
           </a>
@@ -207,23 +346,7 @@ export default function BK_LMS_Portal() {
           </nav>
         </div>
 
-        <div className="bkel-navbar-right">
-          {/* Quick Role Switcher for Demoing to Dr. Minh */}
-          <div className="bkel-role-switcher" title="Chuyển đổi góc nhìn vai trò để kiểm thử">
-            <button
-              className={`bkel-role-btn ${role === 'instructor' ? 'active' : ''}`}
-              onClick={() => setRole('instructor')}
-            >
-              👨‍🏫 GV: TS. Nguyễn Quốc Minh
-            </button>
-            <button
-              className={`bkel-role-btn ${role === 'student' ? 'active' : ''}`}
-              onClick={() => setRole('student')}
-            >
-              👨‍🎓 SV: Nguyễn Ngọc Sáng
-            </button>
-          </div>
-
+        <div className="bkel-navbar-right" style={{ position: 'relative' }}>
           {/* Notification Bell */}
           <button className="bkel-icon-btn" title="Thông báo hệ thống">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -241,8 +364,12 @@ export default function BK_LMS_Portal() {
             <span className="bkel-badge">1</span>
           </button>
 
-          {/* User Profile */}
-          <div className="bkel-user-menu">
+          {/* User Profile and Dropdown */}
+          <div
+            className="bkel-user-menu"
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            title="Tài khoản cá nhân"
+          >
             <div
               style={{
                 width: '32px',
@@ -257,13 +384,38 @@ export default function BK_LMS_Portal() {
                 fontSize: '13px',
               }}
             >
-              {role === 'instructor' ? 'QM' : 'NS'}
+              {currentUser.role === 'instructor' ? 'GV' : 'SV'}
             </div>
             <span className="bkel-user-name">{currentUser.name}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M6 9l6 6 6-6" />
             </svg>
           </div>
+
+          {/* Dropdown Menu */}
+          {userMenuOpen && (
+            <div className="bkel-dropdown-menu">
+              <div className="bkel-dropdown-header">
+                <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{currentUser.name}</div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  {currentUser.title} • {currentUser.code}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{currentUser.email}</div>
+              </div>
+              <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                <span>👤</span> Hồ sơ cá nhân
+              </div>
+              <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                <span>📊</span> Bảng điểm học tập
+              </div>
+              <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                <span>⚙️</span> Tùy chọn tài khoản
+              </div>
+              <div className="bkel-dropdown-item danger" onClick={handleLogout}>
+                <span>🚪</span> Đăng xuất (Log out)
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -321,7 +473,7 @@ export default function BK_LMS_Portal() {
           ===================================================================== */}
       <main className="bkel-container">
         {/* -------------------------------------------------------------------
-            VIEW 1: TRANG CHỦ (HOME PAGE - Exactly Matching User Screenshot)
+            VIEW 1: TRANG CHỦ (HOME PAGE)
             ------------------------------------------------------------------- */}
         {currentView === 'home' && (
           <div>
@@ -345,7 +497,7 @@ export default function BK_LMS_Portal() {
               <div className="bkel-carousel-arrow right" title="Tiếp">›</div>
             </div>
 
-            {/* Quick Access Card to Pilot Course */}
+            {/* Quick Access Course Card */}
             <div
               style={{
                 background: '#e6f6f8',
@@ -372,14 +524,14 @@ export default function BK_LMS_Portal() {
                       borderRadius: '4px',
                     }}
                   >
-                    HỌC PHẦN THÍ ĐIỂM HK261
+                    LỚP HỌC PHẦN HỌC KỲ 1/2026-2027
                   </span>
                   <strong style={{ color: '#004d5a', fontSize: '15px' }}>
                     Cấu trúc Dữ liệu và Giải thuật (CO2003 - Lớp CC01)
                   </strong>
                 </div>
                 <div style={{ fontSize: '13px', color: '#495057' }}>
-                  Giảng viên: TS. Nguyễn Quốc Minh • Thời gian: Thứ Tư, Tiết 1 - 4 (07:30 - 11:15) • Phòng: H6-302 • Hôm nay: Buổi 3 (Danh sách liên kết đơn)
+                  Giảng viên: TS. Nguyễn Văn A • Thời gian: Thứ Tư, Tiết 1 - 4 (07:30 - 11:15) • Phòng: B4-302, Cơ sở 1 Lý Thường Kiệt (Q.10)
                 </div>
               </div>
               <button
@@ -391,7 +543,7 @@ export default function BK_LMS_Portal() {
               </button>
             </div>
 
-            {/* Site Announcements Section (Matching Image 4) */}
+            {/* Site Announcements Section */}
             <div className="bkel-announcements-header">
               <h2 className="bkel-announcements-title">Thông báo chung / Site announcements</h2>
               <a href="#subscribe" className="bkel-announcements-subscribe" onClick={(e) => e.preventDefault()}>
@@ -404,7 +556,7 @@ export default function BK_LMS_Portal() {
               </a>
             </div>
 
-            {/* Announcement 1: Pilot Course BKeL AI System */}
+            {/* Announcement 1 */}
             <div className="bkel-post-card">
               <div className="bkel-post-header">
                 <div className="bkel-post-avatar">
@@ -414,23 +566,23 @@ export default function BK_LMS_Portal() {
                   </svg>
                 </div>
                 <div className="bkel-post-meta">
-                  <h4>Triển khai Hệ thống BKeL AI & Học phần Thí điểm CO2003 (HK261) :</h4>
+                  <h4>Triển khai Hệ thống BKeL Mới & Đào tạo Trực tuyến Học kỳ 1/2026-2027 :</h4>
                   <span>Bởi User Admin - Thứ Sáu, 8 tháng 11 2026, 8:00 AM</span>
                 </div>
               </div>
               <div className="bkel-post-content">
                 <p>
-                  Nhằm nâng cao chất lượng đào tạo và ứng dụng công nghệ giáo dục hiện đại, Trường Đại học Bách Khoa
-                  - ĐHQG-HCM chính thức triển khai nâng cấp hệ thống BKeL tích hợp trí tuệ nhân tạo (AI-Powered E-Learning).
+                  Khoa Khoa học và Kỹ thuật Máy tính phối hợp cùng Trung tâm Dữ liệu và Công nghệ Thông tin triển khai
+                  hệ thống BKeL thế hệ mới phục vụ giảng dạy và học tập học kỳ 1 năm học 2026-2027.
                 </p>
                 <p style={{ marginTop: '6px' }}>
-                  Học phần <strong>Cấu trúc Dữ liệu và Giải thuật (CO2003 - Lớp CC01)</strong> do <strong>TS. Nguyễn Quốc Minh</strong> phụ trách
-                  được chọn làm học phần thí điểm. Hệ thống hỗ trợ:
+                  Học phần <strong>Cấu trúc Dữ liệu và Giải thuật (CO2003 - Lớp CC01)</strong> do <strong>TS. Nguyễn Văn A</strong> phụ trách
+                  tại Cơ sở 1 (268 Lý Thường Kiệt, Q.10) được tích hợp các tiện ích đào tạo hiện đại:
                 </p>
                 <ul style={{ paddingLeft: '20px', marginTop: '6px' }}>
                   <li>Điểm danh từng buổi học bằng mã PIN động an toàn, chống gian lận.</li>
-                  <li>Lộ trình chuẩn 15 buổi học, thời khóa biểu trực quan, bài kiểm tra tương tác từng câu gắn với kỹ năng.</li>
-                  <li>Phân tích năng lực chuyên sâu (Knowledge Tracing Radar) hỗ trợ người học thích ứng.</li>
+                  <li>Lộ trình 15 buổi học, thời khóa biểu trực quan, bài kiểm tra tương tác từng câu gắn với kỹ năng.</li>
+                  <li>Bản đồ năng lực tri thức (Knowledge Tracing Radar) hỗ trợ người học theo dõi tiến độ.</li>
                 </ul>
               </div>
               <div className="bkel-post-footer">
@@ -439,7 +591,7 @@ export default function BK_LMS_Portal() {
               </div>
             </div>
 
-            {/* Announcement 2: Moodle Mobile (Authentic text from screenshot 4) */}
+            {/* Announcement 2: Moodle Mobile */}
             <div className="bkel-post-card">
               <div className="bkel-post-header">
                 <div className="bkel-post-avatar">
@@ -481,7 +633,7 @@ export default function BK_LMS_Portal() {
         )}
 
         {/* -------------------------------------------------------------------
-            VIEW 2: CÁC KHOÁ HỌC CỦA TÔI (Matching Screenshot 5)
+            VIEW 2: CÁC KHOÁ HỌC CỦA TÔI (MY COURSES)
             ------------------------------------------------------------------- */}
         {currentView === 'my-courses' && (
           <div>
@@ -520,7 +672,7 @@ export default function BK_LMS_Portal() {
                 </select>
               </div>
 
-              {/* Semester Accordion (Matching Screenshot 5) */}
+              {/* Semester Accordion */}
               <div className="bkel-semester-accordion">
                 <div
                   className="bkel-semester-header"
@@ -537,25 +689,19 @@ export default function BK_LMS_Portal() {
                         key={idx}
                         className="bkel-course-card"
                         onClick={() => {
-                          if (c.isPilot) {
+                          if (c.isTarget) {
                             setCurrentView('course');
                           } else {
-                            alert(`Học phần "${c.title}" nằm ngoài phạm vi học phần thí điểm CO2003.`);
+                            alert(`Đang mở học phần: ${c.title}`);
                           }
                         }}
-                        style={c.isPilot ? { border: '2px solid #008299', background: '#fafdfd' } : {}}
                       >
                         <div className={`bkel-course-thumb ${c.thumbClass}`}>
                           <span>{c.icon}</span>
                         </div>
 
                         <div className="bkel-course-info">
-                          <div className="bkel-course-code">
-                            | {c.code}
-                            {c.isPilot && (
-                              <span className="bkel-pilot-badge">★ MÔN HỌC THÍ ĐIỂM (CLICK ĐỂ VÀO LỚP)</span>
-                            )}
-                          </div>
+                          <div className="bkel-course-code">| {c.code}</div>
                           <div className="bkel-course-name">{c.title}</div>
                           <div className="bkel-course-dept">{c.dept}</div>
                         </div>
@@ -573,7 +719,7 @@ export default function BK_LMS_Portal() {
         )}
 
         {/* -------------------------------------------------------------------
-            VIEW 3: CHI TIẾT MÔN HỌC THÍ ĐIỂM (CO2003 - DSA)
+            VIEW 3: CHI TIẾT MÔN HỌC CO2003 (DSA - LỚP CC01)
             ------------------------------------------------------------------- */}
         {currentView === 'course' && (
           <div>
@@ -627,7 +773,7 @@ export default function BK_LMS_Portal() {
                   <div style={{ fontWeight: 700, color: '#008299', marginBottom: '2px' }}>
                     HÔM NAY: BUỔI 3 (ĐANG DIỄN RA)
                   </div>
-                  <div>Phòng H6-302 • 07:30 - 11:15</div>
+                  <div>Phòng B4-302 (Cơ sở 1 Lý Thường Kiệt, Q.10)</div>
                   <div style={{ color: '#2e7d32', fontWeight: 600, marginTop: '2px' }}>
                     ● Phiên điểm danh PIN đang mở
                   </div>
@@ -637,7 +783,7 @@ export default function BK_LMS_Portal() {
               {/* Course Meta Tags */}
               <div className="bkel-course-meta-tags">
                 <div className="bkel-course-meta-item">
-                  <strong>Giảng viên:</strong> TS. Nguyễn Quốc Minh
+                  <strong>Giảng viên:</strong> TS. Nguyễn Văn A
                 </div>
                 <div>•</div>
                 <div className="bkel-course-meta-item">
@@ -645,7 +791,7 @@ export default function BK_LMS_Portal() {
                 </div>
                 <div>•</div>
                 <div className="bkel-course-meta-item">
-                  <strong>Địa điểm:</strong> Phòng H6-302, Cơ sở 2 Dĩ An
+                  <strong>Địa điểm:</strong> Phòng B4-302, Cơ sở 1 (268 Lý Thường Kiệt, Q.10)
                 </div>
                 <div>•</div>
                 <div className="bkel-course-meta-item">
@@ -695,7 +841,7 @@ export default function BK_LMS_Portal() {
             </div>
 
             {/* ---------------------------------------------------------------
-                SUB-TAB 1: 15 BUỔI HỌC (CO2003 CURRICULUM - TUẤN'S 15 SESSIONS)
+                SUB-TAB 1: 15 BUỔI HỌC (CO2003 CURRICULUM)
                 --------------------------------------------------------------- */}
             {courseTab === 'sessions' && (
               <div>
@@ -736,7 +882,7 @@ export default function BK_LMS_Portal() {
                               Điểm danh chuyên cần các buổi học (BKeL Attendance)
                             </span>
                             <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                              Sinh viên check-in bằng mã PIN 4 chữ số do Giảng viên cung cấp tại lớp
+                              Sinh viên check-in bằng mã PIN 4 chữ số do Giảng viên phát hành tại phòng B4-302
                             </div>
                           </div>
                         </div>
@@ -781,7 +927,7 @@ export default function BK_LMS_Portal() {
 
                       <div className="bkel-topic-body">
                         <div style={{ fontSize: '13px', color: '#6c757d', marginBottom: '8px' }}>
-                          📅 {session.date} • ⏰ {session.time} • 📍 Phòng {session.room}
+                          📅 {session.date} • ⏰ {session.time} • 📍 Phòng {session.room} (Cơ sở 1 Lý Thường Kiệt, Q.10)
                         </div>
                         <div className="bkel-topic-desc">{session.description}</div>
 
@@ -833,15 +979,15 @@ export default function BK_LMS_Portal() {
                                       Điểm danh Buổi 3 bằng mã PIN (Mở lúc 07:30 - 08:00)
                                     </span>
                                     <div style={{ fontSize: '12px', color: '#15803d' }}>
-                                      {role === 'instructor'
+                                      {currentUser.role === 'instructor'
                                         ? `Mã PIN đang phát hành: ${pinCode} (Còn lại ${formatTimer(pinSecondsLeft)})`
                                         : roster[0].session3Status === 'present'
                                         ? 'Bạn đã điểm danh thành công: CÓ MẶT (Present)'
-                                        : 'Chưa điểm danh! Nhập mã PIN do thầy cung cấp'}
+                                        : 'Chưa điểm danh! Nhập mã PIN do Giảng viên cung cấp'}
                                     </div>
                                   </div>
                                 </div>
-                                {role === 'instructor' ? (
+                                {currentUser.role === 'instructor' ? (
                                   <button className="bkel-btn-sm" onClick={() => setCourseTab('attendance')}>
                                     Quản lý phiên điểm danh
                                   </button>
@@ -900,11 +1046,11 @@ export default function BK_LMS_Portal() {
                       Điểm danh học phần: CO2003 - Cấu trúc Dữ liệu và Giải thuật
                     </h2>
                     <div style={{ fontSize: '13px', color: '#6c757d' }}>
-                      Phiên điểm danh theo buổi học • Phương thức xác thực: Mã PIN động 4 chữ số + Thời hạn hiệu lực
+                      Địa điểm: Phòng B4-302 (Cơ sở 1, 268 Lý Thường Kiệt, Q.10) • Phương thức: Mã PIN động 4 chữ số
                     </div>
                   </div>
 
-                  {role === 'instructor' ? (
+                  {currentUser.role === 'instructor' ? (
                     <button className="bkel-btn-sm" onClick={handleGenerateNewPin}>
                       🔄 Tạo mã PIN mới (Generate PIN)
                     </button>
@@ -920,11 +1066,11 @@ export default function BK_LMS_Portal() {
                 </div>
 
                 {/* Live PIN Code Banner for Instructor View */}
-                {role === 'instructor' && (
+                {currentUser.role === 'instructor' && (
                   <div className="bkel-pin-panel">
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#004d5a', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        MÃ PIN ĐIỂM DANH BUỔI 3 ĐANG PHÁT HÀNH TẠI PHÒNG H6-302
+                        MÃ PIN ĐIỂM DANH BUỔI 3 ĐANG PHÁT HÀNH TẠI PHÒNG B4-302 (CƠ SỞ 1 Q.10)
                       </div>
                       <div className="bkel-pin-display">
                         <div className="bkel-pin-digits">{pinCode}</div>
@@ -961,7 +1107,7 @@ export default function BK_LMS_Portal() {
                 )}
 
                 {/* Student Personal Check-in Status Card */}
-                {role === 'student' && (
+                {currentUser.role === 'student' && (
                   <div
                     style={{
                       background: roster[0].session3Status === 'present' ? '#f0fdf4' : '#fffbeb',
@@ -978,10 +1124,11 @@ export default function BK_LMS_Portal() {
                   >
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '15px', color: roster[0].session3Status === 'present' ? '#166534' : '#92400e' }}>
-                        Trạng thái của bạn: {roster[0].session3Status === 'present' ? 'ĐÃ ĐIỂM DANH (Có mặt)' : 'CHƯA ĐIỂM DANH'}
+                        Trạng thái của bạn ({currentUser.name} - {currentUser.code}):{' '}
+                        {roster[0].session3Status === 'present' ? 'ĐÃ ĐIỂM DANH (Có mặt)' : 'CHƯA ĐIỂM DANH'}
                       </div>
                       <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '2px' }}>
-                        Buổi 3: Danh sách liên kết đơn • Giảng viên đang phát hành mã PIN trên máy chiếu giảng đường.
+                        Buổi 3: Danh sách liên kết đơn • Giảng viên đang phát hành mã PIN tại phòng B4-302.
                       </div>
                     </div>
                     {roster[0].session3Status !== 'present' && (
@@ -1004,7 +1151,7 @@ export default function BK_LMS_Portal() {
                         <th>Chủ đề bài giảng</th>
                         <th>Ngày học</th>
                         <th>Thời gian</th>
-                        <th>Phòng</th>
+                        <th>Phòng học</th>
                         <th>Hình thức</th>
                         <th>Tỷ lệ chuyên cần</th>
                         <th>Trạng thái</th>
@@ -1019,7 +1166,7 @@ export default function BK_LMS_Portal() {
                           <td>{s.title}</td>
                           <td>{s.date}</td>
                           <td>{s.time}</td>
-                          <td>{s.room}</td>
+                          <td>Phòng B4-302 (Cơ sở 1 Q.10)</td>
                           <td>
                             <span style={{ fontSize: '12px', background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>
                               Mã PIN 4 số
@@ -1077,7 +1224,7 @@ export default function BK_LMS_Portal() {
                         <th>Email Bách Khoa</th>
                         <th>Lịch sử chuyên cần</th>
                         <th>Trạng thái Buổi 3</th>
-                        {role === 'instructor' && <th>Thao tác điều chỉnh (Giảng viên)</th>}
+                        {currentUser.role === 'instructor' && <th>Thao tác điều chỉnh (Giảng viên)</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1122,7 +1269,7 @@ export default function BK_LMS_Portal() {
                                 : 'A (Vắng)'}
                             </span>
                           </td>
-                          {role === 'instructor' && (
+                          {currentUser.role === 'instructor' && (
                             <td>
                               <div style={{ display: 'flex', gap: '4px' }}>
                                 <button
@@ -1165,7 +1312,7 @@ export default function BK_LMS_Portal() {
             )}
 
             {/* ---------------------------------------------------------------
-                SUB-TAB 3: THỜI KHÓA BIỂU (TIMETABLE GRID)
+                SUB-TAB 3: THỜI KHÓA BIỂU (TIMETABLE GRID - CƠ SỞ 1 Q.10)
                 --------------------------------------------------------------- */}
             {courseTab === 'timetable' && (
               <div className="bkel-course-overview-card">
@@ -1175,7 +1322,7 @@ export default function BK_LMS_Portal() {
                       Thời khóa biểu Học kỳ 1/2026-2027 (Tuần 1 - 15)
                     </h2>
                     <div style={{ fontSize: '13px', color: '#6c757d' }}>
-                      Lớp học phần: CO2003 - CC01 • Cơ sở 2 Dĩ An • Giảng đường H6
+                      Địa điểm: Cơ sở 1 (268 Lý Thường Kiệt, P.14, Q.10, TP.HCM)
                     </div>
                   </div>
                   <div style={{ fontSize: '13px', color: '#008299', fontWeight: 600 }}>
@@ -1214,9 +1361,9 @@ export default function BK_LMS_Portal() {
                               <div style={{ fontSize: '11px', color: '#00695c' }}>Lớp CC01 (4 Tín chỉ)</div>
                             </div>
                             <div style={{ fontSize: '11px', marginTop: '4px' }}>
-                              📍 <strong>Phòng H6-302</strong> (Cơ sở Dĩ An)
+                              📍 <strong>Phòng B4-302</strong> (Cơ sở 1 Lý Thường Kiệt, Q.10)
                               <br />
-                              👨‍🏫 TS. Nguyễn Quốc Minh
+                              👨‍🏫 TS. Nguyễn Văn A
                             </div>
                           </div>
                         </td>
@@ -1233,7 +1380,7 @@ export default function BK_LMS_Portal() {
                             }}
                           >
                             <strong>CO3061 - Nhập môn Trí tuệ Nhân tạo</strong>
-                            <div style={{ color: '#6b7280' }}>Phòng H6-204 • TS. Nguyễn Quốc Minh</div>
+                            <div style={{ color: '#6b7280' }}>Phòng B6-102 (Cơ sở 1 Q.10) • TS. Lê Văn D</div>
                           </div>
                         </td>
                         <td>--</td>
@@ -1271,7 +1418,7 @@ export default function BK_LMS_Portal() {
                             }}
                           >
                             <strong>CO3029 - Khai phá Dữ liệu (Data Mining)</strong>
-                            <div style={{ color: '#6b7280' }}>Phòng H1-201 • ThS. Võ Ngọc Tú</div>
+                            <div style={{ color: '#6b7280' }}>Phòng B4-201 (Cơ sở 1 Q.10) • TS. Trần Văn C</div>
                           </div>
                         </td>
                         <td>--</td>
@@ -1297,7 +1444,7 @@ export default function BK_LMS_Portal() {
                       Danh sách Người tham gia học phần (8 Sinh viên)
                     </h2>
                     <div style={{ fontSize: '13px', color: '#6c757d' }}>
-                      Lớp CC01 • Khoa Khoa học và Kỹ thuật Máy tính • Trường Đại học Bách Khoa
+                      Lớp CC01 • Khoa Khoa học và Kỹ thuật Máy tính • Cơ sở 1 Lý Thường Kiệt
                     </div>
                   </div>
                 </div>
@@ -1364,7 +1511,7 @@ export default function BK_LMS_Portal() {
                     <div style={{ fontSize: '28px', fontWeight: 800, color: '#008299', margin: '4px 0' }}>
                       8 / 60
                     </div>
-                    <div style={{ fontSize: '12px', color: '#16a34a' }}>Tỷ lệ lấp đầy: 13.3% (Lớp thí điểm)</div>
+                    <div style={{ fontSize: '12px', color: '#16a34a' }}>Sĩ số danh sách chính thức</div>
                   </div>
 
                   <div className="bkel-post-card" style={{ padding: '16px' }}>
@@ -1398,7 +1545,7 @@ export default function BK_LMS_Portal() {
                   </div>
                 </div>
 
-                {/* Session Attendance Rate Chart (Visualized with SVG Bar Chart) */}
+                {/* Session Attendance Rate Chart */}
                 <div className="bkel-course-overview-card">
                   <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1a365d', marginBottom: '16px' }}>
                     Biểu đồ Tỷ lệ chuyên cần qua 15 Buổi học
@@ -1455,7 +1602,7 @@ export default function BK_LMS_Portal() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#1a365d' }}>
-                      Bản đồ Năng lực AI (Knowledge Tracing Radar) • Sinh viên: Nguyễn Ngọc Sáng (2353046)
+                      Bản đồ Năng lực AI (Knowledge Tracing Radar) • Người học: {currentUser.name} ({currentUser.code})
                     </h2>
                     <div style={{ fontSize: '13px', color: '#6c757d' }}>
                       Được tính toán tự động dựa trên kết quả tương tác từng câu hỏi (Per-Question Item Response Theory)
@@ -1545,7 +1692,7 @@ export default function BK_LMS_Portal() {
             </div>
             <div className="bkel-modal-body">
               <p style={{ fontSize: '13.5px', color: '#495057', marginBottom: '16px' }}>
-                Vui lòng nhập <strong>mã PIN 4 chữ số</strong> hiển thị trên màn hình máy chiếu của Thầy Minh tại phòng H6-302 để xác nhận có mặt:
+                Vui lòng nhập <strong>mã PIN 4 chữ số</strong> hiển thị trên màn hình máy chiếu tại phòng B4-302 (Cơ sở 1 Lý Thường Kiệt) để xác nhận có mặt:
               </p>
 
               <form onSubmit={handleStudentCheckin}>
@@ -1606,7 +1753,7 @@ export default function BK_LMS_Portal() {
       )}
 
       {/* =====================================================================
-          5. INTERACTIVE QUIZ MODAL (TUẤN'S 3 CO2003 QUESTIONS FOR SESSION 3)
+          5. INTERACTIVE QUIZ MODAL
           ===================================================================== */}
       {quizModalOpen && (
         <div className="bkel-modal-backdrop" onClick={() => setQuizModalOpen(false)}>
@@ -1628,7 +1775,6 @@ export default function BK_LMS_Portal() {
             <div className="bkel-modal-body">
               {SESSION_QUIZ_QUESTIONS.map((q, qIndex) => {
                 const userChoice = selectedAnswers[qIndex];
-                const isAnswered = userChoice !== undefined;
                 return (
                   <div
                     key={q.id}
@@ -1773,7 +1919,7 @@ export default function BK_LMS_Portal() {
       )}
 
       {/* =====================================================================
-          6. REAL BKEL TECHNICIAN FOOTER (Matching Image 4)
+          6. REAL BKEL TECHNICIAN FOOTER
           ===================================================================== */}
       <footer className="bkel-footer">
         <div className="bkel-footer-inner">
@@ -1792,7 +1938,7 @@ export default function BK_LMS_Portal() {
           </p>
 
           <div className="bkel-footer-bottom">
-            Copyright 2007-2026 BKEL - Phát triển dựa trên Moodle • Dự án Chuyên ngành E-Learning AI (Nhóm 480 - HK261)
+            Copyright 2007-2026 BKEL - Phát triển dựa trên Moodle • Trường Đại học Bách Khoa - ĐHQG-HCM
           </div>
         </div>
       </footer>
