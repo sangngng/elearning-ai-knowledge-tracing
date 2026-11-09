@@ -8,6 +8,38 @@ import {
   SESSION_QUIZ_QUESTIONS,
   SKILL_MASTERY_SAMPLE,
 } from './data/dsaCourseData';
+import {
+  CoursePatternThumbnail,
+  MoodlePdfIcon,
+  MoodleQuizIcon,
+  MoodleAttendanceIcon,
+  MoodleForumIcon,
+  MoodleCodeIcon,
+  MoodleFolderIcon,
+  NavBookIcon,
+  NavChecklistIcon,
+  NavCalendarIcon,
+  NavUsersIcon,
+  NavChartIcon,
+  NavBrainIcon,
+  StatusDoneIcon,
+  StatusActiveIcon,
+  StatusUpcomingIcon,
+  InstructorBadgeIcon,
+  StudentBadgeIcon,
+  SparklesIcon,
+  LocationPinIcon,
+  LogoutIcon,
+  UserProfileIcon,
+  UserGradesIcon,
+  UserSettingsIcon,
+  ClockIcon,
+  CalendarIcon,
+  CheckmarkIcon,
+  RefreshIcon,
+  CloseIcon,
+  DotsVerticalIcon,
+} from './components/BKeLIcons';
 
 export default function BK_LMS_Portal() {
   // Authentication State
@@ -169,7 +201,7 @@ export default function BK_LMS_Portal() {
       title: 'Data Mining (CO3029)_Trần Văn C [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'teal',
-      icon: '📊',
+      patternType: 'circles',
       isTarget: false,
     },
     {
@@ -177,7 +209,7 @@ export default function BK_LMS_Portal() {
       title: 'Introduction to Artificial Intelligence (CO3061)_Lê Văn D [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'cyan',
-      icon: '🤖',
+      patternType: 'hexagons',
       isTarget: false,
     },
     {
@@ -185,7 +217,7 @@ export default function BK_LMS_Portal() {
       title: 'Cấu trúc Dữ liệu và Giải thuật (CO2003)_Nguyễn Văn A [CLC_HK261] [CC01]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'cyan',
-      icon: '🌲',
+      patternType: 'triangles',
       isTarget: true,
     },
     {
@@ -193,7 +225,7 @@ export default function BK_LMS_Portal() {
       title: 'Specialized Project (CO4029)_Nguyễn Văn A [CLC_HK261] [CC28]',
       dept: 'Khoa Khoa học và Kỹ thuật Máy tính (Faculty of Computer Science and Engineering)',
       thumbClass: 'purple',
-      icon: '🎓',
+      patternType: 'diamonds',
       isTarget: false,
     },
   ];
@@ -282,7 +314,10 @@ export default function BK_LMS_Portal() {
                 className="bkel-quick-role-btn"
                 onClick={() => handleLoginAs('instructor')}
               >
-                <span>👨‍🏫 Giảng viên: <strong>TS. Nguyễn Văn A</strong></span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <InstructorBadgeIcon size={18} color="#008299" />
+                  <span>Giảng viên: <strong>TS. Nguyễn Văn A</strong></span>
+                </span>
                 <span style={{ fontSize: '11px', color: '#008299' }}>Vào quyền GV →</span>
               </button>
               <button
@@ -290,7 +325,10 @@ export default function BK_LMS_Portal() {
                 className="bkel-quick-role-btn"
                 onClick={() => handleLoginAs('student')}
               >
-                <span>👨‍🎓 Sinh viên: <strong>Nguyễn Văn B (2110001)</strong></span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <StudentBadgeIcon size={18} color="#008299" />
+                  <span>Sinh viên: <strong>Nguyễn Văn B (2110001)</strong></span>
+                </span>
                 <span style={{ fontSize: '11px', color: '#008299' }}>Vào quyền SV →</span>
               </button>
             </div>
@@ -409,16 +447,16 @@ export default function BK_LMS_Portal() {
                 <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{currentUser.email}</div>
               </div>
               <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
-                <span>👤</span> Hồ sơ cá nhân
+                <UserProfileIcon size={16} /> Hồ sơ cá nhân
               </div>
               <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
-                <span>📊</span> Bảng điểm học tập
+                <UserGradesIcon size={16} /> Bảng điểm học tập
               </div>
               <div className="bkel-dropdown-item" onClick={() => setUserMenuOpen(false)}>
-                <span>⚙️</span> Tùy chọn tài khoản
+                <UserSettingsIcon size={16} /> Tùy chọn tài khoản
               </div>
               <div className="bkel-dropdown-item danger" onClick={handleLogout}>
-                <span>🚪</span> Đăng xuất (Log out)
+                <LogoutIcon size={16} /> Đăng xuất (Log out)
               </div>
             </div>
           )}
@@ -500,8 +538,8 @@ export default function BK_LMS_Portal() {
                 onClick={() => setCurrentView('course')}
                 style={{ border: '1px solid #008299' }}
               >
-                <div className="bkel-course-thumb cyan">
-                  <span>🌲</span>
+                <div className="bkel-course-thumb" style={{ width: '130px', height: '82px', overflow: 'hidden', padding: 0 }}>
+                  <CoursePatternThumbnail type="triangles" />
                 </div>
                 <div className="bkel-course-info">
                   <div className="bkel-course-code">| 79738_CO2003_004318_CLC</div>
@@ -526,7 +564,7 @@ export default function BK_LMS_Portal() {
               <div className="bkel-activity-list">
                 <div className="bkel-activity-item" style={{ background: '#f0fdf4', borderColor: '#86efac' }}>
                   <div className="bkel-activity-left">
-                    <span className="bkel-activity-icon">🎯</span>
+                    <MoodleAttendanceIcon size={24} />
                     <div>
                       <span className="bkel-activity-name" style={{ color: '#166534' }}>
                         Điểm danh Buổi 3: Danh sách liên kết đơn (Phòng B4-302, Cơ sở 1)
@@ -549,7 +587,7 @@ export default function BK_LMS_Portal() {
 
                 <div className="bkel-activity-item" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
                   <div className="bkel-activity-left">
-                    <span className="bkel-activity-icon">📝</span>
+                    <MoodleQuizIcon size={24} />
                     <div>
                       <span className="bkel-activity-name" style={{ color: '#1e40af' }}>
                         Bài kiểm tra tương tác Buổi 3 (Quiz 3 câu)
@@ -798,8 +836,8 @@ export default function BK_LMS_Portal() {
                           }
                         }}
                       >
-                        <div className={`bkel-course-thumb ${c.thumbClass}`}>
-                          <span>{c.icon}</span>
+                        <div className="bkel-course-thumb" style={{ width: '130px', height: '82px', overflow: 'hidden', padding: 0 }}>
+                          <CoursePatternThumbnail type={c.patternType} />
                         </div>
 
                         <div className="bkel-course-info">
@@ -809,7 +847,7 @@ export default function BK_LMS_Portal() {
                         </div>
 
                         <div className="bkel-card-menu-btn" title="Tùy chọn">
-                          ⋮
+                          <DotsVerticalIcon size={16} color="#adb5bd" />
                         </div>
                       </div>
                     ))}
@@ -908,37 +946,37 @@ export default function BK_LMS_Portal() {
                 className={`bkel-tab-btn ${courseTab === 'sessions' ? 'active' : ''}`}
                 onClick={() => setCourseTab('sessions')}
               >
-                <span>📚</span> Nội dung khoá học (15 Buổi học)
+                <NavBookIcon size={17} /> Nội dung khoá học (15 Buổi học)
               </button>
               <button
                 className={`bkel-tab-btn ${courseTab === 'attendance' ? 'active' : ''}`}
                 onClick={() => setCourseTab('attendance')}
               >
-                <span>🎯</span> Điểm danh BKeL (Attendance PIN)
+                <NavChecklistIcon size={17} /> Điểm danh BKeL (Attendance PIN)
               </button>
               <button
                 className={`bkel-tab-btn ${courseTab === 'timetable' ? 'active' : ''}`}
                 onClick={() => setCourseTab('timetable')}
               >
-                <span>📅</span> Thời khóa biểu (Timetable)
+                <NavCalendarIcon size={17} /> Thời khóa biểu (Timetable)
               </button>
               <button
                 className={`bkel-tab-btn ${courseTab === 'participants' ? 'active' : ''}`}
                 onClick={() => setCourseTab('participants')}
               >
-                <span>👥</span> Người tham gia (8 Sinh viên)
+                <NavUsersIcon size={17} /> Người tham gia (8 Sinh viên)
               </button>
               <button
                 className={`bkel-tab-btn ${courseTab === 'analytics' ? 'active' : ''}`}
                 onClick={() => setCourseTab('analytics')}
               >
-                <span>📊</span> Báo cáo & Thống kê
+                <NavChartIcon size={17} /> Báo cáo & Thống kê
               </button>
               <button
                 className={`bkel-tab-btn ${courseTab === 'radar' ? 'active' : ''}`}
                 onClick={() => setCourseTab('radar')}
               >
-                <span>🧠</span> Phân tích Năng lực AI (Knowledge Tracing)
+                <NavBrainIcon size={17} /> Phân tích Năng lực AI (Knowledge Tracing)
               </button>
             </div>
 
@@ -951,14 +989,15 @@ export default function BK_LMS_Portal() {
                 <div className="bkel-topic-card">
                   <div className="bkel-topic-header">
                     <div className="bkel-topic-title">
-                      <span>📌</span> Thông tin chung & Tài nguyên học phần
+                      <MoodleFolderIcon size={22} />
+                      <span>Thông tin chung & Tài nguyên học phần</span>
                     </div>
                   </div>
                   <div className="bkel-topic-body">
                     <div className="bkel-activity-list">
                       <div className="bkel-activity-item">
                         <div className="bkel-activity-left">
-                          <span className="bkel-activity-icon">📄</span>
+                          <MoodlePdfIcon size={24} />
                           <span className="bkel-activity-name">Đề cương chi tiết môn học CO2003_DSA_HK261.pdf</span>
                         </div>
                         <button className="bkel-btn-outline" onClick={() => alert('Đang tải tài liệu Đề cương chi tiết...')}>
@@ -968,7 +1007,7 @@ export default function BK_LMS_Portal() {
 
                       <div className="bkel-activity-item">
                         <div className="bkel-activity-left">
-                          <span className="bkel-activity-icon">📢</span>
+                          <MoodleForumIcon size={24} />
                           <span className="bkel-activity-name">Diễn đàn thông báo & Thảo luận lớp học CC01</span>
                         </div>
                         <button className="bkel-btn-outline" onClick={() => alert('Mở diễn đàn trao đổi lớp học...')}>
@@ -978,7 +1017,7 @@ export default function BK_LMS_Portal() {
 
                       <div className="bkel-activity-item" style={{ background: '#e6f6f8', borderColor: '#008299' }}>
                         <div className="bkel-activity-left">
-                          <span className="bkel-activity-icon">🎯</span>
+                          <MoodleAttendanceIcon size={24} />
                           <div>
                             <span className="bkel-activity-name" style={{ color: '#008299' }}>
                               Điểm danh chuyên cần các buổi học (BKeL Attendance)
@@ -1008,7 +1047,13 @@ export default function BK_LMS_Portal() {
                     >
                       <div className="bkel-topic-header">
                         <div className="bkel-topic-title">
-                          <span>{isPast ? '✅' : isCurrent ? '🔴' : '📖'}</span>
+                          {isPast ? (
+                            <StatusDoneIcon size={18} />
+                          ) : isCurrent ? (
+                            <StatusActiveIcon size={18} />
+                          ) : (
+                            <StatusUpcomingIcon size={18} />
+                          )}
                           <span>
                             Buổi {session.sessionNumber}: {session.title}
                           </span>
@@ -1028,8 +1073,18 @@ export default function BK_LMS_Portal() {
                       </div>
 
                       <div className="bkel-topic-body">
-                        <div style={{ fontSize: '13px', color: '#6c757d', marginBottom: '8px' }}>
-                          📅 {session.date} • ⏰ {session.time} • 📍 Phòng {session.room} (Cơ sở 1 Lý Thường Kiệt, Q.10)
+                        <div style={{ fontSize: '13px', color: '#6c757d', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <CalendarIcon size={14} /> {session.date}
+                          </span>
+                          <span>•</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <ClockIcon size={14} /> {session.time}
+                          </span>
+                          <span>•</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <LocationPinIcon size={14} /> Phòng {session.room} (Cơ sở 1 Lý Thường Kiệt, Q.10)
+                          </span>
                         </div>
                         <div className="bkel-topic-desc">{session.description}</div>
 
@@ -1038,7 +1093,7 @@ export default function BK_LMS_Portal() {
                           {/* Slide presentation PDF */}
                           <div className="bkel-activity-item">
                             <div className="bkel-activity-left">
-                              <span className="bkel-activity-icon">📊</span>
+                              <MoodlePdfIcon size={24} />
                               <span className="bkel-activity-name">
                                 Slide bài giảng Buổi {session.sessionNumber}: {session.title} (PDF)
                               </span>
@@ -1054,7 +1109,7 @@ export default function BK_LMS_Portal() {
                           {/* Source code / Lab */}
                           <div className="bkel-activity-item">
                             <div className="bkel-activity-left">
-                              <span className="bkel-activity-icon">💻</span>
+                              <MoodleCodeIcon size={24} />
                               <span className="bkel-activity-name">
                                 Mã nguồn thực hành & Bài tập mẫu (C++ / Python / GitHub)
                               </span>
@@ -1075,7 +1130,7 @@ export default function BK_LMS_Portal() {
                                 style={{ background: '#f0fdf4', borderColor: '#86efac' }}
                               >
                                 <div className="bkel-activity-left">
-                                  <span className="bkel-activity-icon">🎯</span>
+                                  <MoodleAttendanceIcon size={24} />
                                   <div>
                                     <span className="bkel-activity-name" style={{ color: '#166534' }}>
                                       Điểm danh Buổi 3 bằng mã PIN (Mở lúc 07:30 - 08:00)
@@ -1099,11 +1154,18 @@ export default function BK_LMS_Portal() {
                                     onClick={() => setPinModalOpen(true)}
                                     style={
                                       roster[0].session3Status === 'present'
-                                        ? { background: '#16a34a' }
+                                        ? { background: '#16a34a', display: 'inline-flex', alignItems: 'center', gap: '6px' }
                                         : {}
                                     }
                                   >
-                                    {roster[0].session3Status === 'present' ? '✓ Đã điểm danh' : 'Nhập mã PIN ngay'}
+                                    {roster[0].session3Status === 'present' ? (
+                                      <>
+                                        <CheckmarkIcon size={14} />
+                                        <span>Đã điểm danh</span>
+                                      </>
+                                    ) : (
+                                      'Nhập mã PIN ngay'
+                                    )}
                                   </button>
                                 )}
                               </div>
@@ -1113,7 +1175,7 @@ export default function BK_LMS_Portal() {
                                 style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}
                               >
                                 <div className="bkel-activity-left">
-                                  <span className="bkel-activity-icon">📝</span>
+                                  <MoodleQuizIcon size={24} />
                                   <div>
                                     <span className="bkel-activity-name" style={{ color: '#1e40af' }}>
                                       Bài kiểm tra tương tác Buổi 3 (Interactive Quiz - 3 câu hỏi)
@@ -1153,16 +1215,31 @@ export default function BK_LMS_Portal() {
                   </div>
 
                   {currentUser.role === 'instructor' ? (
-                    <button className="bkel-btn-sm" onClick={handleGenerateNewPin}>
-                      🔄 Tạo mã PIN mới (Generate PIN)
+                    <button className="bkel-btn-sm" onClick={handleGenerateNewPin} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <RefreshIcon size={14} />
+                      <span>Tạo mã PIN mới (Generate PIN)</span>
                     </button>
                   ) : (
                     <button
                       className="bkel-btn-sm"
                       onClick={() => setPinModalOpen(true)}
-                      style={roster[0].session3Status === 'present' ? { background: '#16a34a' } : {}}
+                      style={
+                        roster[0].session3Status === 'present'
+                          ? { background: '#16a34a', display: 'inline-flex', alignItems: 'center', gap: '6px' }
+                          : { display: 'inline-flex', alignItems: 'center', gap: '6px' }
+                      }
                     >
-                      {roster[0].session3Status === 'present' ? '✓ Bạn đã điểm danh (Có mặt)' : '🎯 Nhập mã PIN điểm danh'}
+                      {roster[0].session3Status === 'present' ? (
+                        <>
+                          <CheckmarkIcon size={14} />
+                          <span>Bạn đã điểm danh (Có mặt)</span>
+                        </>
+                      ) : (
+                        <>
+                          <NavChecklistIcon size={14} />
+                          <span>Nhập mã PIN điểm danh</span>
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
@@ -1177,7 +1254,9 @@ export default function BK_LMS_Portal() {
                       <div className="bkel-pin-display">
                         <div className="bkel-pin-digits">{pinCode}</div>
                         <div className="bkel-pin-timer">
-                          <span>⏱ Hết hạn sau:</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <ClockIcon size={14} /> Hết hạn sau:
+                          </span>
                           <strong>{formatTimer(pinSecondsLeft)}</strong>
                         </div>
                       </div>
@@ -1463,9 +1542,15 @@ export default function BK_LMS_Portal() {
                               <div style={{ fontSize: '11px', color: '#00695c' }}>Lớp CC01 (4 Tín chỉ)</div>
                             </div>
                             <div style={{ fontSize: '11px', marginTop: '4px' }}>
-                              📍 <strong>Phòng B4-302</strong> (Cơ sở 1 Lý Thường Kiệt, Q.10)
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <LocationPinIcon size={12} color="#00695c" />
+                                <strong>Phòng B4-302</strong> (Cơ sở 1 Lý Thường Kiệt, Q.10)
+                              </span>
                               <br />
-                              👨‍🏫 TS. Nguyễn Văn A
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                <InstructorBadgeIcon size={13} color="#00695c" />
+                                <span>TS. Nguyễn Văn A</span>
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -1751,7 +1836,7 @@ export default function BK_LMS_Portal() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '20px' }}>🤖</span>
+                      <SparklesIcon size={20} color="#0284c7" />
                       <strong style={{ fontSize: '15px', color: '#0f172a' }}>Nhận xét & Khuyến nghị của AI Tutor</strong>
                     </div>
                     <p style={{ fontSize: '13px', color: '#334155', lineHeight: 1.6 }}>
@@ -1784,12 +1869,16 @@ export default function BK_LMS_Portal() {
         <div className="bkel-modal-backdrop" onClick={() => setPinModalOpen(false)}>
           <div className="bkel-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="bkel-modal-header">
-              <span>🎯 Điểm danh Buổi 3: Singly Linked List</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MoodleAttendanceIcon size={20} />
+                <span>Điểm danh Buổi 3: Singly Linked List</span>
+              </span>
               <button
                 onClick={() => setPinModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '4px' }}
+                title="Đóng"
               >
-                ✕
+                <CloseIcon size={16} />
               </button>
             </div>
             <div className="bkel-modal-body">
@@ -1865,12 +1954,16 @@ export default function BK_LMS_Portal() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bkel-modal-header">
-              <span>📝 Trắc nghiệm Tương tác Buổi 3: Danh sách liên kết đơn</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MoodleQuizIcon size={20} />
+                <span>Trắc nghiệm Tương tác Buổi 3: Danh sách liên kết đơn</span>
+              </span>
               <button
                 onClick={() => setQuizModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '4px' }}
+                title="Đóng"
               >
-                ✕
+                <CloseIcon size={16} />
               </button>
             </div>
 
