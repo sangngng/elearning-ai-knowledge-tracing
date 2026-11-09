@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <head>
-        <link rel="icon" href="https://lms.hcmut.edu.vn/pluginfile.php/3/core_admin/favicon/64x64/1775124670/logoBK.png" />
+        <link rel="icon" href="/bkel-logo.png" />
       </head>
       <body>{children}</body>
     </html>
