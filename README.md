@@ -43,7 +43,7 @@ Elearning-AI/
 │   └── package.json
 │
 ├── ai_service/                          # Dịch vụ AI & Theo dõi trạng thái kiến thức
-│   ├── datasets/                        # Dữ liệu benchmark chuẩn quốc tế
+│   ├── datasets/                        # Dữ liệu benchmark 
 │   │   ├── sample_assistments.csv       # Mẫu dữ liệu ASSISTments 2009-2010
 │   │   └── inspect_dataset.py           # Script thống kê quy mô dữ liệu
 │   ├── models/                          # Thuật toán AI
