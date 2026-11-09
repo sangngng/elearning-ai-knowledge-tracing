@@ -331,6 +331,8 @@ export function LogoutIcon({ size = 16, color = 'currentColor' }) {
   );
 }
 
+
+
 // 6. USER MENU & UTILITY ICONS
 export function UserProfileIcon({ size = 16, color = 'currentColor' }) {
   return (
