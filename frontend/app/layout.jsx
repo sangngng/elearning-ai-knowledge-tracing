@@ -1,13 +1,17 @@
 import './globals.css';
-import Link from 'next/link';
-export const metadata = { title: 'LMS Thích ứng' };
+
+export const metadata = {
+  title: 'BK-LMS AI | Hệ thống E-Learning Thích ứng • ĐH Bách Khoa TP.HCM',
+  description: 'Hệ thống Quản lý Học tập E-Learning tích hợp AI - Khoa KH&KT Máy tính HCMUT',
+};
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="vi"><body>
-      <div className="nav"><b>LMS Thích ứng</b>
-        <Link href="/">Khóa học</Link><Link href="/lecture">Bài giảng</Link><Link href="/quiz">Trắc nghiệm</Link>
-      </div>
-      <div className="wrap">{children}</div>
-    </body></html>
+    <html lang="vi">
+      <head>
+        <link rel="icon" href="https://lms.hcmut.edu.vn/pluginfile.php/3/core_admin/favicon/64x64/1775124670/logoBK.png" />
+      </head>
+      <body>{children}</body>
+    </html>
   );
 }
