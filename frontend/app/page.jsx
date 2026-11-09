@@ -332,16 +332,22 @@ export default function BK_LMS_Portal() {
               Trang chủ
             </div>
             <div
-              className={`bkel-nav-item ${currentView === 'my-courses' ? 'active' : ''}`}
+              className={`bkel-nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setCurrentView('dashboard')}
+            >
+              Bảng Điều khiển
+            </div>
+            <div
+              className={`bkel-nav-item ${currentView === 'my-courses' || currentView === 'course' ? 'active' : ''}`}
               onClick={() => setCurrentView('my-courses')}
             >
               Các khoá học của tôi
             </div>
             <div
-              className={`bkel-nav-item ${currentView === 'course' ? 'active' : ''}`}
-              onClick={() => setCurrentView('course')}
+              className={`bkel-nav-item ${currentView === 'courses' ? 'active' : ''}`}
+              onClick={() => setCurrentView('my-courses')}
             >
-              Khóa học CO2003
+              Khóa học
             </div>
           </nav>
         </div>
@@ -436,6 +442,13 @@ export default function BK_LMS_Portal() {
             </a>
           </li>
 
+          {currentView === 'dashboard' && (
+            <>
+              <li className="bkel-breadcrumb-separator">/</li>
+              <li className="bkel-breadcrumb-item bkel-breadcrumb-current">Bảng Điều khiển</li>
+            </>
+          )}
+
           {currentView === 'my-courses' && (
             <>
               <li className="bkel-breadcrumb-separator">/</li>
@@ -472,6 +485,95 @@ export default function BK_LMS_Portal() {
           3. MAIN CONTENT ROUTER
           ===================================================================== */}
       <main className="bkel-container">
+        {/* -------------------------------------------------------------------
+            VIEW: BẢNG ĐIỀU KHIỂN (DASHBOARD)
+            ------------------------------------------------------------------- */}
+        {currentView === 'dashboard' && (
+          <div>
+            <h1 className="bkel-page-title">Bảng Điều khiển (Dashboard)</h1>
+
+            {/* Recently accessed courses */}
+            <div className="bkel-course-overview-card" style={{ marginBottom: '20px' }}>
+              <h3 className="bkel-overview-title">Khóa học đã truy cập gần đây</h3>
+              <div
+                className="bkel-course-card"
+                onClick={() => setCurrentView('course')}
+                style={{ border: '1px solid #008299' }}
+              >
+                <div className="bkel-course-thumb cyan">
+                  <span>🌲</span>
+                </div>
+                <div className="bkel-course-info">
+                  <div className="bkel-course-code">| 79738_CO2003_004318_CLC</div>
+                  <div className="bkel-course-name">
+                    Cấu trúc Dữ liệu và Giải thuật (CO2003)_Nguyễn Văn A [CLC_HK261] [CC01]
+                  </div>
+                  <div className="bkel-course-dept">
+                    Khoa Khoa học và Kỹ thuật Máy tính • Phòng B4-302 (Cơ sở 1 Lý Thường Kiệt, Q.10)
+                  </div>
+                </div>
+                <div style={{ paddingRight: '20px' }}>
+                  <button className="bkel-btn-sm" onClick={() => setCurrentView('course')}>
+                    Tiếp tục học →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline & Upcoming activities */}
+            <div className="bkel-course-overview-card">
+              <h3 className="bkel-overview-title">Dòng thời gian (Timeline)</h3>
+              <div className="bkel-activity-list">
+                <div className="bkel-activity-item" style={{ background: '#f0fdf4', borderColor: '#86efac' }}>
+                  <div className="bkel-activity-left">
+                    <span className="bkel-activity-icon">🎯</span>
+                    <div>
+                      <span className="bkel-activity-name" style={{ color: '#166534' }}>
+                        Điểm danh Buổi 3: Danh sách liên kết đơn (Phòng B4-302, Cơ sở 1)
+                      </span>
+                      <div style={{ fontSize: '12px', color: '#15803d' }}>
+                        Hôm nay: 07:30 - 11:15 • Học phần CO2003 (CC01)
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="bkel-btn-sm"
+                    onClick={() => {
+                      setCurrentView('course');
+                      setCourseTab('attendance');
+                    }}
+                  >
+                    Vào điểm danh
+                  </button>
+                </div>
+
+                <div className="bkel-activity-item" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
+                  <div className="bkel-activity-left">
+                    <span className="bkel-activity-icon">📝</span>
+                    <div>
+                      <span className="bkel-activity-name" style={{ color: '#1e40af' }}>
+                        Bài kiểm tra tương tác Buổi 3 (Quiz 3 câu)
+                      </span>
+                      <div style={{ fontSize: '12px', color: '#3b82f6' }}>
+                        Hạn chót: 23:59 hôm nay • Học phần CO2003 (CC01)
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="bkel-btn-sm"
+                    onClick={() => {
+                      setCurrentView('course');
+                      setQuizModalOpen(true);
+                    }}
+                  >
+                    Làm bài kiểm tra
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* -------------------------------------------------------------------
             VIEW 1: TRANG CHỦ (HOME PAGE)
             ------------------------------------------------------------------- */}
