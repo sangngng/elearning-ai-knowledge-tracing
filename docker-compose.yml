@@ -1,4 +1,5 @@
-# Default: `docker compose up -d` starts PostgreSQL only and applies backend/db/schema.sql.
+# Default: `docker compose up -d` starts PostgreSQL (applies backend/db/schema.sql) and Adminer,
+# a web page to browse the database at http://localhost:8081 .
 # Application containers are opt-in profiles and need the Dockerfiles from task S1-4:
 #   docker compose --profile app up -d --build
 #   docker compose --profile ai up -d --build      (AI lane, see management/ROADMAP.md section 5)
@@ -21,6 +22,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  adminer:
+    image: adminer:4
+    container_name: elearning_adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   backend:
     profiles: ["app"]

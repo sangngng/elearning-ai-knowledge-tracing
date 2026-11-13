@@ -35,8 +35,10 @@ Quy ước: mỗi loại tài liệu chỉ có một bản. Lược đồ CSDL �
 Yêu cầu: Node.js LTS, Docker (hoặc PostgreSQL 15 cài sẵn).
 
 ```bash
-# 1. Cơ sở dữ liệu (tự áp dụng backend/db/schema.sql)
+# 1. Cơ sở dữ liệu (tự áp dụng backend/db/schema.sql) và trang xem CSDL
 docker compose up -d
+#    Xem CSDL: http://localhost:8081  (System: PostgreSQL, Server: postgres,
+#    Username: postgres, Password: postgres, Database: elearning)
 
 # 2. Backend: http://localhost:8080
 cd backend
