@@ -1,5 +1,6 @@
 # Default: `docker compose up -d` starts PostgreSQL (applies backend/db/schema.sql) and Adminer,
-# a web page to browse the database at http://localhost:8081 .
+# a web page to browse the database at
+# http://localhost:8081/?pgsql=postgres&username=postgres&db=elearning  (password: postgres).
 # Application containers are opt-in profiles and need the Dockerfiles from task S1-4:
 #   docker compose --profile app up -d --build
 #   docker compose --profile ai up -d --build      (AI lane, see management/ROADMAP.md section 5)
@@ -26,6 +27,8 @@ services:
   adminer:
     image: adminer:4
     container_name: elearning_adminer
+    # Bind IPv4 explicitly: the image default (IPv6 [::]) fails on hosts without IPv6.
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
     restart: unless-stopped
     environment:
       ADMINER_DEFAULT_SERVER: postgres
@@ -44,7 +47,7 @@ services:
     environment:
       PORT: 8080
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/elearning
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the shell or a root .env file}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-before-any-shared-deployment}
       CORS_ORIGIN: http://localhost:3000
     ports:
       - "8080:8080"

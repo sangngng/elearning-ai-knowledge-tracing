@@ -37,8 +37,9 @@ Yêu cầu: Node.js LTS, Docker (hoặc PostgreSQL 15 cài sẵn).
 ```bash
 # 1. Cơ sở dữ liệu (tự áp dụng backend/db/schema.sql) và trang xem CSDL
 docker compose up -d
-#    Xem CSDL: http://localhost:8081  (System: PostgreSQL, Server: postgres,
-#    Username: postgres, Password: postgres, Database: elearning)
+#    Xem CSDL: mở http://localhost:8081/?pgsql=postgres&username=postgres&db=elearning
+#    rồi nhập Password: postgres  (đường dẫn này đã chọn sẵn PostgreSQL; nếu mở
+#    http://localhost:8081 trực tiếp, nhớ đổi ô System từ MySQL sang PostgreSQL)
 
 # 2. Backend: http://localhost:8080
 cd backend
@@ -53,7 +54,7 @@ npm ci && npm run dev
 
 Kiểm tra: `curl http://localhost:8080/health` trả về `{"status":"ok"}`; `cd backend && npm run typecheck`.
 
-Chạy trọn bộ bằng container (sau khi có Dockerfile, nhiệm vụ S1-4): `JWT_SECRET=<chuỗi bí mật> docker compose --profile app up -d --build`.
+Chạy trọn bộ bằng container (sau khi có Dockerfile, nhiệm vụ S1-4): `docker compose --profile app up -d --build   # đặt JWT_SECRET trong biến môi trường nếu dùng ngoài máy cá nhân`.
 
 ## 3. Dịch vụ AI (giai đoạn nghiên cứu)
 
