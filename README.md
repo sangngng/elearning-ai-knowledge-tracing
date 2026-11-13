@@ -10,52 +10,31 @@
 
 ---
 
-## 1. Cấu trúc Thư mục Dự án 
+## 1. Cấu trúc Thư mục Dự án
 
 ```text
-Elearning-AI/
-├── docs/                                # Tài liệu phân tích và thiết kế hệ thống
-│   ├── use-cases/                       # Bảng đặc tả Use Cases & Sơ đồ tương tác
-│   │   ├── Use_Case_Specification_EN.docx
-│   │   └── USE_CASES_SUMMARY.md
-│   ├── database/                        # Thiết kế Cơ sở Dữ liệu quan hệ
-│   │   ├── erd_elearning.png            # Ảnh sơ đồ quan hệ thực thể (ERD)
-│   │   ├── schema.sql                   # Mã DDL PostgreSQL chuẩn hóa
-│   │   ├── schema.dbml                  # Mã nguồn DBML
-│   │   └── DATABASE_DICTIONARY.md       # Từ điển dữ liệu chi tiết các bảng
-│   └── architecture/                    # Kiến trúc tổng thể & luồng dữ liệu
-│       └── OVERALL_PIPELINE.md          # Sơ đồ Pipeline kết nối Web & AI
-│
-├── frontend/                            # Giao diện người dùng Web LMS (Next.js 14)
-│   ├── app/
-│   │   ├── page.jsx                     # Đăng nhập & Danh sách khóa học
-│   │   ├── lecture/page.jsx             # Giao diện xem bài giảng
-│   │   └── quiz/page.jsx                # Làm bài trắc nghiệm ghi nhận từng câu
-│   ├── package.json
-│   └── README.md
-│
-├── backend/                             # Dịch vụ Backend API (Node.js / Express)
-│   ├── src/
-│   │   └── server.js                    # API xác thực, khóa học và ghi nhận tương tác
-│   ├── db/
-│   │   └── schema.sql                   # Script khởi tạo CSDL
-│   ├── .env.example
-│   └── package.json
-│
-├── ai_service/                          # Dịch vụ AI & Theo dõi trạng thái kiến thức
-│   ├── datasets/                        # Dữ liệu benchmark 
-│   │   ├── sample_assistments.csv       # Mẫu dữ liệu ASSISTments 2009-2010
-│   │   └── inspect_dataset.py           # Script thống kê quy mô dữ liệu
-│   ├── models/                          # Thuật toán AI
-│   │   └── bkt_baseline.py              # Thuật toán Bayesian Knowledge Tracing cơ sở
-│   ├── api/
-│   │   └── main.py                      # FastAPI endpoint suy luận độ thành thạo kỹ năng
-│   └── requirements.txt
-│
-├── docker-compose.yml                   # Khởi chạy toàn bộ hệ thống bằng 1 lệnh
-├── .gitignore
+elearning-ai-knowledge-tracing/
+├── backend/                  # REST API (Node.js, Express, TypeScript)
+│   ├── src/                  #   app, routes, middleware, config
+│   ├── db/                   #   schema.sql và schema.dbml (nguồn duy nhất của CSDL)
+│   └── .env.example
+├── frontend/                 # Cổng BKeL (Next.js 14)
+│   ├── app/                  #   trang, components, dữ liệu
+│   └── public/
+├── ai_service/               # Dịch vụ AI (tạm dừng, chỉ có baseline BKT)
+├── docs/
+│   ├── requirements/         # Đặc tả use case
+│   ├── architecture/         # Kiến trúc và pipeline tổng thể
+│   ├── database/             # Từ điển dữ liệu
+│   ├── diagrams/             # Sơ đồ use case, kiến trúc, hoạt động, ERD
+│   └── data/                 # Dữ liệu môn CO2003 (15 buổi, 40 câu hỏi, 11 kỹ năng)
+├── report/                   # Mã nguồn LaTeX của báo cáo (main.tex, content/, images/)
+├── management/               # Lộ trình, bảng công việc, nhật ký họp với GVHD
+├── docker-compose.yml
 └── README.md
 ```
+
+Quy ước: mỗi loại tài liệu chỉ có một bản. Lược đồ CSDL nằm ở `backend/db/`, sơ đồ nằm ở `docs/diagrams/`.
 
 ---
 
@@ -94,3 +73,12 @@ docker compose up -d
 # AI Service: port 8000
 # Web Frontend: port 3000
 ```
+
+### 2.3. Biên dịch báo cáo
+```bash
+cd report
+pdflatex main.tex && pdflatex main.tex
+```
+
+### 2.4. Quản lý tiến độ
+Xem `management/ROADMAP.md` (lộ trình), `management/TASKS.md` (phân công) và `management/MEETINGS.md` (nhật ký họp).

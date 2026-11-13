@@ -1,11 +1,11 @@
-# E-Learning AI Backend (Database v2)
+# E-Learning AI Backend
 
-Express/TypeScript API for PostgreSQL. Database v2 adds semesters, course classes, enrollments, 15-session schedules, attendance PINs, session materials, and session-linked quiz telemetry.
+Express/TypeScript API for PostgreSQL. The database covers semesters, course classes, enrollments, 15-session schedules, attendance PINs, session materials, and session-linked quiz telemetry.
 
 ## Database setup
 
 - For a new database, create a PostgreSQL database and run `db/schema.sql`.
-- For an existing v1 database, back up first, then run the same script. It is rerunnable and preserves legacy lessons, quizzes, and quiz interactions. Existing quizzes/interactions keep a nullable `session_id` until they are associated with a v2 session; new quiz and telemetry rows are session-linked.
+- For an existing database, back up first, then run the same script. It is rerunnable and preserves existing lessons, quizzes, and quiz interactions. Older quizzes/interactions keep a nullable `session_id` until they are associated with a class session; new quiz and telemetry rows are session-linked.
 - Copy `.env.example` to `.env` and set `DATABASE_URL` and a long, private `JWT_SECRET`.
 
 Install from this folder with `npm ci`; start with `npm run dev`. The API defaults to `http://localhost:8080`.

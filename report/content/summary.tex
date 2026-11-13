@@ -1,0 +1,17 @@
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+Learning Management Systems (LMS) are now the backbone of blended and online teaching at universities. At Ho Chi Minh City University of Technology (HCMUT), students and lecturers use the BKeL portal, which is built on Moodle, to access course material, submit work and follow their timetable. Despite its maturity, a generic LMS does not model several routine academic processes in a way that is convenient for a single course: a course offered as a numbered sequence of fifteen sessions, in-class attendance that cannot be faked remotely, and per-session statistics that a lecturer can read at a glance.
+
+This report presents the first part of the specialized project (CO4029) \emph{``Design of an E-Learning System with AI Integration''} (project code HK261-DAGD1-480): the design and implementation of the e-learning platform itself. The platform reproduces the look and feel of the BKeL portal and adds the academic workflow of a real class: semesters, course offerings, enrollment with a capacity limit, a fifteen-session schedule with a weekly timetable, learning materials per session, and an in-class attendance mechanism based on a short-lived, randomly generated four-digit PIN that is opened by the lecturer and entered by students.
+
+The report documents the requirements (seven use cases in Cockburn's format), the architecture (a Next.js~14 front end, an Express/TypeScript REST API, and a PostgreSQL database), and the relational schema of fourteen tables in third normal form, including the constraints and the trigger that protect data integrity. It also describes the dataset prepared for the pilot course \emph{Data Structures and Algorithms} (CO2003): a fifteen-session outline and a bank of forty multiple-choice questions labeled with eleven skills. The current prototype, its security measures and its known limitations are described honestly, and the last chapter gives a week-by-week plan for the second semester (HK262) in which the system will be completed, evaluated with users and extended with the intelligent learning-support features of the full project.
+
+\bigskip
+\noindent\textbf{Keywords:} learning management system, e-learning, BKeL, Moodle, PostgreSQL, REST API, attendance, Next.js.
+
+\section*{Acknowledgements}
+\addcontentsline{toc}{section}{Acknowledgements}
+
+The team would like to thank Dr.\ Nguyen Quoc Minh, our supervisor, for his guidance during the biweekly meetings. His feedback after the third meeting, which asked us to turn the first prototype into a complete university-grade system before anything else, shaped the direction of this report. We also thank the Faculty of Computer Science and Engineering, HCMUT, for the learning environment, and our classmates who tested the prototype and gave us honest comments.
+

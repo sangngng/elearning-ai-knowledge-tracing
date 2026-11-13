@@ -1,4 +1,4 @@
-# Database Dictionary — E-Learning AI v2
+# Database Dictionary — E-Learning AI
 
 **Engine:** PostgreSQL 15+ with `pgcrypto`. **Scope:** semesters, course offerings, schedules, learning materials, attendance, quizzes, and AI knowledge-tracing telemetry.
 
@@ -82,7 +82,7 @@ Records PIN validation attempts to limit guessing. Five failed attempts for one 
 
 ### `quizzes`
 
-New quizzes require a `session_id`, so each assessment belongs to a class session. `lesson_id` remains nullable for v1 compatibility. Existing quizzes upgraded from v1 have a nullable session link until explicitly mapped; a not-valid check constraint preserves those rows while requiring new quizzes to link a session.
+New quizzes require a `session_id`, so each assessment belongs to a class session. `lesson_id` remains nullable for backward compatibility. Existing quizzes have a nullable session link until explicitly mapped; a not-valid check constraint preserves those rows while requiring new quizzes to link a session.
 
 ### `skills`
 
@@ -94,7 +94,7 @@ Question prompt and JSONB options associated with a quiz and skill. `position` i
 
 ### `quiz_interactions`
 
-One response event per attempt: `user_id`, `session_id`, `question_id`, `skill_id`, `is_correct`, `attempt_count`, and `created_at`. The composite `(question_id, skill_id)` FK prevents the telemetry skill from diverging from its question. Historical v1 events retain a nullable `session_id`; a not-valid check constraint preserves those rows while requiring new events to include a session.
+One response event per attempt: `user_id`, `session_id`, `question_id`, `skill_id`, `is_correct`, `attempt_count`, and `created_at`. The composite `(question_id, skill_id)` FK prevents the telemetry skill from diverging from its question. Earlier events retain a nullable `session_id`; a not-valid check constraint preserves those rows while requiring new events to include a session.
 
 ### `lessons` (legacy)
 
@@ -102,7 +102,7 @@ Retained for the original lesson API and historical quiz links. New quizzes are 
 
 ### `schema_version`
 
-Records installed schema version; v2 inserts version `2` idempotently after its tables, constraints, and indexes.
+Records installed schema version; the script inserts the version number idempotently after its tables, constraints, and indexes.
 
 ## Delete behavior
 
@@ -126,6 +126,6 @@ Records installed schema version; v2 inserts version `2` idempotently after its 
 
 Completed sessions are sessions whose scheduled end time has passed in `Asia/Ho_Chi_Minh`. `present` and `late` count as attended; `excused` sessions are removed from the denominator. Overall rate is attended check-ins divided by expected non-excused student/session occurrences. Missing records count as not attended.
 
-## Upgrade from v1
+## Applying the schema to an existing database
 
-Back up the database and run `psql -v ON_ERROR_STOP=1 -d <database> -f backend/db/schema.sql`. The script is rerunnable and adds new tables/columns without deleting existing data. V1 quizzes and quiz interactions receive nullable `session_id` fields so history is retained; map old quizzes to a class session before accepting v2 submissions for them.
+Back up the database and run `psql -v ON_ERROR_STOP=1 -d <database> -f backend/db/schema.sql`. The script is rerunnable and adds new tables/columns without deleting existing data. Existing quizzes and quiz interactions receive nullable `session_id` fields so history is retained; map old quizzes to a class session before accepting new submissions for them.

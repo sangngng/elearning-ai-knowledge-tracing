@@ -1,0 +1,93 @@
+\section{Background and Related Work}
+\label{ch:background}
+
+This section reviews the concepts and technologies on which the system is built. It starts from the role of an LMS and the BKeL portal, continues with the design principles and software-engineering practices adopted, and ends with a description of the technology stack and the reasons for choosing it.
+
+\subsection{Learning Management Systems}
+
+\subsubsection{Definition and Typical Functions}
+
+A Learning Management System is a software application for the administration, documentation, tracking, reporting and delivery of educational courses~\cite{ellis2009field}. Common functions are: user and role management, course catalog, delivery of learning material, assessment (quizzes and assignments), communication tools, and reporting. The success of an e-learning system depends on several dimensions, including system quality, information quality, service quality and the satisfaction of learners and instructors~\cite{alfraihat2020evaluating}. For this project these dimensions translate into three practical concerns: the interface must be easy to use, the data shown must be correct and up to date, and the system must be reliable during a lecture.
+
+\subsubsection{Moodle and BKeL}
+
+Moodle is an open-source course management system based on a social-constructivist pedagogy~\cite{dougiamas2003moodle}. Its documentation describes the structure that students of HCMUT know well: a \emph{course} contains \emph{sections}, and a section contains \emph{activities and resources} such as files, pages, quizzes and forums~\cite{moodledocs}. The BKeL portal of HCMUT is built on Moodle and is combined with the university's Central Authentication Service (CAS). A user logs in through the CAS page, lands on a dashboard that lists enrolled courses as cards, and enters a course page organized in weekly or topic sections.
+
+The visual language of BKeL has become part of the daily habits of students: a teal-blue header, a course card with a geometric pattern, small icons for each activity type, and a left-hand navigation drawer. A new system that wants to be adopted should not ask users to learn a new interface for the same tasks. For this reason, the prototype of this project deliberately keeps the BKeL visual identity (primary color \texttt{\#008299}, Moodle-style cards and activity icons) while improving details such as spacing, motion and a dark theme.
+
+\subsubsection{Limitations of a Generic LMS for Class-Level Operations}
+
+Moodle is highly extensible, but several class-level operations are not part of its core data model. Table~\ref{tab:gap} summarizes the gaps that motivated this project. We want to be precise: these are gaps in \emph{the default data model and workflow}, not in what an administrator can achieve with plugins.
+
+\begin{table}[H]
+\centering
+\caption{Class-level needs and how they map onto a generic LMS and onto the proposed system}
+\label{tab:gap}
+\begin{tblr}{colspec={Q[l,3.3cm]X[l]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
+Need & Generic LMS (default) & Proposed system\\
+Offering of a course in a semester with a capacity & Course and enrollment methods; capacity usually handled by the registration system & First-class entities \code{semesters}, \code{course_classes}, \code{enrollments}; capacity enforced by a database trigger\\
+Exactly 15 numbered sessions with date, time and room & Weekly sections with free-form dates & \code{course_sessions} with \code{session_number} in $[1,15]$ and a transactional bulk creation\\
+Proof of presence in class & Attendance via plugin or manual tick & Random four-digit PIN with expiry, rate limit and one record per student and session\\
+Participation per session and per student & Reports depend on the plugin & Dedicated endpoint and statistics page\\
+Skill label per question & Question categories (free-form) & \code{skills} table; a question references exactly one skill by foreign key\\
+\end{tblr}
+\end{table}
+
+\subsection{Attendance Management}
+
+Attendance can be recorded in several ways: a paper roll call, a tick on a list, a QR code shown on a screen, biometric systems, or a code that is announced in class. Each has a different trade-off between effort, cost and resistance to proxy attendance (a classmate checking in for an absent student).
+
+\begin{itemize}
+    \item \textbf{Roll call} is reliable but consumes lecture time proportional to the number of students.
+    \item \textbf{Static QR codes} are fast but can be photographed and sent to absent students.
+    \item \textbf{Biometric or location-based systems} are strong but require special hardware or permissions and raise privacy concerns.
+    \item \textbf{A short-lived PIN} shown on the lecturer's screen requires physical presence in the room (or at least a live view of the screen), costs a few seconds, and needs no additional hardware.
+\end{itemize}
+
+We chose the PIN approach. A four-digit PIN has only 10\,000 possible values, so on its own it is weak against a brute-force attack from a logged-in student. The system therefore combines it with three controls: a short validity period of ten to fifteen minutes, a limit of five failed attempts per student and session in a fifteen-minute window (HTTP status 429, defined in~\cite{rfc6585}), and the requirement that the student is enrolled in the class. The effect of these controls is analyzed in Section~\ref{sec:pin-security}. The importance given to attendance is justified by the evidence that attendance is associated with grades~\cite{crede2010class, kassarnig2018academic}.
+
+\subsection{Software Architecture Principles}
+
+\subsubsection{Layered and Client--Server Architecture}
+
+The system adopts a three-tier layered architecture: presentation, application and persistence. Layering separates concerns and allows each tier to evolve independently~\cite{bass2021software, fowler2002patterns}. The client--server style also makes it possible to scale the stateless API horizontally~\cite{fielding2000architectural}.
+
+\subsubsection{REST}
+
+The API follows the REST architectural style: resources are identified by URLs, the standard HTTP methods express the intent of a request, and each request carries all the information needed to process it~\cite{fielding2000architectural}. Message bodies use JSON~\cite{rfc8259}. The semantics of methods and status codes follow the HTTP specification~\cite{rfc9110}. Stateless requests simplify the deployment because any instance of the API can serve any request.
+
+\subsubsection{Authentication and Authorization}
+
+Authentication uses JSON Web Tokens~\cite{rfc7519}. After a successful login the server signs a token with a secret key and the client sends it in the \texttt{Authorization} header of later requests. Authorization is role based: a user is a student, an instructor or an administrator, and every route declares which roles may call it. Passwords are never stored in clear text; they are hashed with bcrypt, a password hashing scheme that includes a salt and an adaptive cost so that it can be made slower as hardware improves~\cite{provos1999bcrypt}. The recommendations of NIST for digital identity~\cite{nist80063b} and the OWASP application security verification standard~\cite{owaspasvs} guide the minimum requirements for password storage and for rate limiting of authentication-like operations.
+
+\subsection{Relational Data Modeling}
+
+\subsubsection{Relational Model and Normalization}
+
+The relational model~\cite{codd1970relational} represents data as relations (tables) and offers a declarative query language. The entity-relationship model~\cite{chen1976entity} is the usual notation for conceptual design. A schema is in third normal form (3NF) when every non-key attribute depends on the key, the whole key and nothing but the key; textbooks such as~\cite{silberschatz2019database} and~\cite{elmasri2015fundamentals} describe the normal forms and the decomposition process. We use 3NF as a design rule for the fourteen tables of the system, and we accept a small number of deliberate exceptions that are documented in Section~\ref{sec:normalization}.
+
+\subsubsection{Integrity Constraints and Triggers}
+
+Declarative constraints (primary keys, foreign keys, \texttt{UNIQUE} and \texttt{CHECK}) let the database engine itself reject invalid data, so that integrity does not depend on every application path being correct. Triggers are used where a rule involves several rows, such as ``the number of enrolled students must not exceed the capacity of the class''. Because such a rule reads data and then writes data, two concurrent transactions can both read ``59 of 60'' and both insert. This is a classical concurrency anomaly; the SQL isolation levels and their anomalies are analyzed in~\cite{berenson1995critique}, and the more general theory of concurrency control in~\cite{bernstein1981concurrency}. The system prevents the anomaly with an explicit row lock (\texttt{SELECT ... FOR UPDATE}) taken on the class row inside the trigger~\cite{postgresdocs}.
+
+\subsection{Technologies Used}
+
+\subsubsection{Front End: Next.js and React}
+
+The front end is written with Next.js~14 using the App Router, on top of React~18~\cite{nextjsdocs, reactdocs}. The pages are components; global styling uses CSS custom properties (design tokens) so that the light and dark themes are switched by changing the values of the variables. All icons are inline SVG so that they remain sharp at every size and need no external font.
+
+\subsubsection{Back End: Node.js, Express and TypeScript}
+
+The API runs on Node.js with the Express framework~\cite{nodedocs, expressdocs} and is written in TypeScript~\cite{typescriptdocs}. Static typing catches a whole class of errors (for example, a missing field of a database row) at compile time rather than during a lecture. The \texttt{pg} driver is used with parameterized queries to avoid SQL injection, which is listed among the most common web application risks by OWASP~\cite{owasptop10}.
+
+\subsubsection{Database: PostgreSQL}
+
+PostgreSQL~15 is used as the database. It supports \texttt{UUID} generation through the \texttt{pgcrypto} extension, partial unique indexes, composite foreign keys, \texttt{JSONB} columns, PL/pgSQL triggers and explicit row locks~\cite{postgresdocs}. These features are used in the schema described in Section~\ref{ch:design}.
+
+\subsubsection{Tools and Practices}
+
+Source code is managed with Git~\cite{chacon2014progit}. The system is developed incrementally with short iterations and frequent feedback from the supervisor, in the spirit of agile development~\cite{beck2001agile, sommerville2016software}. Containerization with Docker~\cite{merkel2014docker} and a continuous-delivery pipeline~\cite{humble2010continuous} are planned for the next semester (Section~\ref{ch:plan}).
+
+\subsection{Usability and Accessibility}
+
+Usability is treated as a quality attribute with measurable criteria. Nielsen's usability heuristics~\cite{nielsen1993usability} guided the design of the interface: visibility of system status (the attendance countdown), consistency with the BKeL conventions, error prevention (disabling the check-in button until four digits are typed), and recognition rather than recall (icons and labels together). For accessibility the Web Content Accessibility Guidelines~\cite{wcag21} are used as a reference, in particular the contrast ratio of text and the availability of keyboard navigation. The System Usability Scale~\cite{brooke1996sus, bangor2008empirical} is planned as the instrument for the user study in HK262.
