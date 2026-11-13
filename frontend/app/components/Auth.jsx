@@ -66,7 +66,7 @@ export default function Auth({ onLogin }) {
           ))}
         </div>
 
-        <div className="auth-foot">Đồ án chuyên ngành CO3047 • HK261 • Mã đề tài HK261-DAGD1-480</div>
+        <div className="auth-foot">Đồ án chuyên ngành CO4029 • HK261 • Mã đề tài HK261-DAGD1-480</div>
       </aside>
 
       <main className="auth-panel">

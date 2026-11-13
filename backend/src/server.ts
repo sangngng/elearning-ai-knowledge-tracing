@@ -1,9 +1,6 @@
-import dotenv from 'dotenv'
 import { createApp } from './app'
 import { env } from './config/env'
 import { closeExpiredAttendance } from './routes/academic'
-
-dotenv.config()
 
 const app = createApp()
 

@@ -211,7 +211,7 @@ Table & Main columns, constraints and meaning\\
 \code{attendance_records} & \code{session_id}, \code{user_id}, \code{status} $\in$ \{present, absent, late, excused\}, \code{checkin_time}, \code{method} $\in$ \{pin, qr, manual\}, \code{note}. \code{UNIQUE (session_id, user_id)}. Present or late rows must have a time and a method.\\
 \code{attendance_pin_attempts} & \code{session_id}, \code{user_id}, \code{attempted_at}, \code{succeeded}. Partial index on failed attempts supports the rate-limit query.\\
 \code{skills} & Knowledge component: \code{code} (unique, e.g.\ \code{DSA-LINKEDLIST}), \code{name}, \code{description}.\\
-\code{quizzes} & \code{session_id} (required for new rows), optional legacy \code{lesson_id}, \code{title}, \code{is_published}.\\
+\code{quizzes} & \code{session_id} (required), \code{title}, \code{is_published}.\\
 \code{questions} & \code{quiz_id}, \code{skill_id}, \code{prompt}, \code{options} (JSONB), \code{correct_answer} (private), \code{position}. \code{UNIQUE (id, skill_id)} supports the composite foreign key.\\
 \code{quiz_interactions} & One row per answer: \code{user_id}, \code{session_id}, \code{question_id}, \code{skill_id}, \code{is_correct}, \code{attempt_count}, \code{created_at}. Composite foreign key \code{(question_id, skill_id)}.\\
 \code{schema_version} & Installed schema version, inserted idempotently.\\
@@ -299,7 +299,6 @@ POST & \code{/api/sessions/:id/attendance/check-in} & Enrolled student submits \
 GET & \code{/api/classes/:classId/attendance/summary} & Capacity, enrolled, completed sessions, overall rate, rate per student\\
 GET & \code{/api/sessions/:id/quizzes} & Published questions of a session, without the answer key\\
 POST & \code{/api/quizzes/:quizId/submit} & Record correctness, skill, attempt and session per question\\
-GET & \code{/api/lessons} & Legacy lesson listing\\
 \end{tblr}
 \end{table}
 

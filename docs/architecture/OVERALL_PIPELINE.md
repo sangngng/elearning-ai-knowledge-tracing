@@ -19,13 +19,13 @@ graph TD
 
     subgraph APILayer ["2. Application Backend Layer (Node.js / Express API)"]
         AuthService["Auth & RBAC Service<br/>(JWT + Bcrypt)"]
-        CourseService["Curriculum Service<br/>(Courses, Lessons, Quizzes)"]
+        CourseService["Curriculum Service<br/>(Courses, Sessions, Quizzes)"]
         InteractionService["Interaction Logging Service<br/>(Telemetry Ingestion)"]
         AIProxy["AI Orchestration Gateway<br/>(Feature Extraction & Cache)"]
     end
 
     subgraph DataLayer ["3. Persistence Layer"]
-        Postgres[(PostgreSQL 15+<br/>• Users, Courses, Lessons<br/>• Skills & Questions<br/>• quiz_interactions)]
+        Postgres[(PostgreSQL 15+<br/>• Users, Courses, Sessions<br/>• Skills & Questions<br/>• quiz_interactions)]
     end
 
     subgraph AIEngine ["4. AI & Knowledge Tracing Microservice (FastAPI / PyTorch)"]

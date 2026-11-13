@@ -1,45 +1,77 @@
-# Project Roadmap — E-Learning System (HK261-DAGD1-480)
+# Lộ trình dự án - E-Learning System (HK261-DAGD1-480)
 
-Project leader: coordination, scheduling, quality gate. Supervisor meetings are held on Sundays, every two weeks.
+Leader điều phối: lập lịch, giao việc, kiểm tra tiến độ và chất lượng. Họp GVHD vào Chủ nhật, hai tuần một lần. Cập nhật lần cuối: 14/11/2026.
 
-## Scope rule
+## 1. Nguyên tắc phạm vi
 
-The supervisor asked for the e-learning system to be finished well first and the AI part later. Until told otherwise, `ai_service/` is parked (baseline only) and the report does not cover AI beyond the HK262 plan.
+- GVHD yêu cầu hoàn thiện hệ thống E-Learning trước, AI làm sau. Đến khi có chỉ đạo khác: `ai_service/` tạm dừng (chỉ giữ baseline BKT), báo cáo không trình bày AI ngoài kế hoạch HK262.
+- Tính năng mới sau 07/12 chỉ nhận khi GVHD yêu cầu; từ đó chỉ sửa lỗi, kiểm thử và viết báo cáo.
+- Cơ sở dữ liệu và ERD mô tả không gắn nhãn phiên bản (đây là bản hoàn chỉnh dần trong quá trình làm, không phải bản nâng cấp).
 
-## Supervisor meetings and report milestones
+## 2. Hiện trạng (14/11/2026)
 
-| Date | Event | What must be ready |
+| Hạng mục | Tình trạng | Ghi chú |
 |---|---|---|
-| 15/11/2026 | Report milestone | Report at least 30 pages (done: 40 pages) |
-| 22/11/2026 | Supervisor meeting 5 | Frontend connected to the backend for login, timetable, sessions and PIN attendance; test results for T13--T16; report draft |
-| 30/11/2026 | Report milestone | Report at least 50 pages |
-| 06/12/2026 | Supervisor meeting 6 | Complete system running with one command; full test report; 50-page report |
-| 15/12/2026 | Report milestone | Report at least 70 pages |
-| 20/12/2026 | Supervisor meeting 7 | Final report draft; rehearsal of the demo |
-| 31/12/2026 | Final defense | Frozen release, report, slides |
+| Báo cáo | 40 trang, 7 mục, 44 tài liệu tham khảo | Mốc 30/11 cần 50 trang, 15/12 cần 70 trang |
+| CSDL | 14 bảng, schema áp dụng sạch và chạy lại được (đã kiểm tra trên PostgreSQL) | Chưa có script seed |
+| Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN, quiz đã có | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
+| Frontend | Build đạt; giao diện BKeL đầy đủ | Toàn bộ dữ liệu là tĩnh, chưa gọi API nào |
+| Docker | Compose chạy được PostgreSQL | Chưa có Dockerfile cho backend và frontend |
+| Dữ liệu CO2003 | 15 buổi, 40 câu, 11 kỹ năng | Phân bố không đều: DSA-COMPLEXITY và DSA-RECURSION chỉ có 1 câu |
+| Sơ đồ | Use case, kiến trúc, hoạt động, ERD | Sơ đồ 01, 02, 04 còn nhắc bài giảng (lessons) cũ |
 
-## Phases
+## 3. Các buổi họp và mốc báo cáo
 
-| Phase | Dates | Goal | Exit criteria |
+| Ngày | Sự kiện | Phải sẵn sàng |
+|---|---|---|
+| 15/11 (CN) | Mốc báo cáo 1 | Báo cáo từ 30 trang (đã đạt: 40 trang) |
+| 22/11 (CN) | Họp GVHD lần 5 | Frontend gọi API thật (đăng nhập, thời khóa biểu, danh sách buổi, điểm danh PIN); kết quả T13-T16; báo cáo khoảng 45-50 trang |
+| 30/11 (T2) | Mốc báo cáo 2 | Báo cáo từ 50 trang |
+| 06/12 (CN) | Họp GVHD lần 6 | Hệ thống đủ UC1-UC7, chạy bằng một lệnh; báo cáo kiểm thử đầy đủ |
+| 15/12 (T3) | Mốc báo cáo 3 | Báo cáo từ 70 trang |
+| 20/12 (CN) | Họp GVHD lần 7 | Bản báo cáo gần cuối, tập demo |
+| 31/12 (T5) | Bảo vệ | Bản phát hành đóng băng, báo cáo, slide |
+
+## 4. Các giai đoạn
+
+| Giai đoạn | Thời gian | Mục tiêu | Tiêu chí hoàn thành |
 |---|---|---|---|
-| 1. Stabilise | 16/11 -- 22/11 | One repository layout, one source of truth, system actually integrated | Frontend calls the real API; `docker compose up` works; T13--T16 executed |
-| 2. Complete | 23/11 -- 06/12 | All use cases UC1--UC7 working end to end | Each use case has a passing test and a demo script |
-| 3. Harden | 07/12 -- 20/12 | Quality, security, performance, report | Test report, 70-page report, no open critical defects |
-| 4. Defend | 21/12 -- 31/12 | Freeze and rehearse | Release tag, slides, two rehearsals |
+| 1. Ổn định | 16/11 - 22/11 | Một cấu trúc kho, một nguồn sự thật, hệ thống nối thông | Frontend gọi API thật; DB seed lặp lại được; T13-T16 chạy thật; test PIN và sĩ số đạt |
+| 2. Hoàn thiện | 23/11 - 06/12 | UC1-UC7 chạy trọn vẹn | Mỗi use case có kịch bản demo và test đạt; `docker compose --profile app up` chạy được |
+| 3. Củng cố | 07/12 - 20/12 | Chất lượng, bảo mật, hiệu năng, báo cáo | Báo cáo kiểm thử, báo cáo 70 trang, không còn lỗi nghiêm trọng |
+| 4. Bảo vệ | 21/12 - 31/12 | Đóng băng và tập dượt | Tag phát hành, slide, hai buổi tập |
 
-## Definition of Done (applies to every task)
+## 5. Cổng chất lượng (đo được)
 
-1. Code merged through a pull request reviewed by another member; TypeScript typecheck passes.
-2. A test or a written manual test record exists.
-3. Documentation under `docs/` or `report/` updated when behaviour changes.
-4. No secrets, absolute local paths, or emoji in source and documents.
-5. The owner reports the result to the leader with evidence (log, screenshot, link).
-
-## Risks
-
-| Risk | Impact | Mitigation |
+| Cổng | Khi nào | Điều kiện |
 |---|---|---|
-| Frontend uses static data and never calls the API | The demo does not show a real system | Task S1-1 is the top priority of phase 1 |
-| `docker-compose.yml` refers to Dockerfiles that do not exist | The system cannot be started with one command | Task S1-4 |
-| Report 50 and 70 page milestones | Missing a milestone | Content is written ahead of the dates in the task board |
-| Three members work in parallel on one repository | Merge conflicts | Short-lived branches, pull requests, one owner per folder |
+| G1 Cấu trúc | 22/11 | Kho gọn, README chạy đúng từ đầu; `npm run typecheck` (backend) và `npm run build` (frontend) đạt |
+| G2 Tích hợp | 22/11 | Đăng nhập, lịch, danh sách buổi, mở PIN và check-in chạy end-to-end trên dữ liệu seed |
+| G3 Test | 06/12 | Mỗi UC1-UC7 có ít nhất một test tự động hoặc bản ghi test thủ công có bằng chứng; test PIN (khóa sau 5 lần sai, PIN hết hạn, check-in trùng) và test sĩ số đồng thời đạt |
+| G4 Tài liệu | 15/12 | 44 tài liệu tham khảo đã đối chiếu, có ngày truy cập; số liệu trong báo cáo khớp với mã nguồn |
+| G5 Phát hành | 28/12 | Tag `v1.0`, chạy sạch từ máy trống theo README, không còn lỗi nghiêm trọng |
+
+## 6. Định nghĩa hoàn thành (áp dụng cho mọi nhiệm vụ)
+
+1. Mã được merge qua pull request, có người khác trong nhóm review; typecheck đạt.
+2. Có test hoặc bản ghi test thủ công kèm bằng chứng (log, ảnh chụp).
+3. Cập nhật `docs/` hoặc `report/` nếu hành vi thay đổi.
+4. Không có bí mật, đường dẫn tuyệt đối máy cá nhân hay emoji trong mã và tài liệu.
+5. Người làm báo cáo kết quả cho leader kèm bằng chứng.
+
+## 7. Rủi ro
+
+| Rủi ro | Ảnh hưởng | Biện pháp | Phụ trách |
+|---|---|---|---|
+| Frontend vẫn dùng dữ liệu tĩnh | Demo không phải hệ thống thật | S1-1 là việc ưu tiên số một; cắt phần việc khác trước | Sang |
+| Chưa có Dockerfile | Không chạy được bằng một lệnh | S1-4, hạn 19/11 | Hào |
+| Ngân hàng câu hỏi lệch (2 kỹ năng chỉ có 1 câu) | Cản trở AI sau này và gây hỏi khi bảo vệ | S1-15: tối thiểu 4 câu mỗi kỹ năng | Tuấn |
+| Tài liệu tham khảo viết từ trí nhớ | Sai thông tin trích dẫn | S1-10: đối chiếu từng mục | Tuấn |
+| Báo cáo 50 và 70 trang | Trượt mốc | Nội dung viết trước hạn theo bảng việc; có danh sách mục dự phòng để thêm | Sang |
+| Ba người cùng sửa một kho | Xung đột merge | Nhánh ngắn, pull request, mỗi thư mục một chủ (xem CONTRIBUTING.md) | Cả nhóm |
+
+## 8. Nếu bị trễ (thứ tự cắt giảm)
+
+1. Giữ nguyên: đăng nhập, lịch, điểm danh PIN, sĩ số, quiz ghi tương tác (cốt lõi của một LMS).
+2. Cắt trước: màn hình thống kê nâng cao, chỉnh sửa tài liệu buổi học bằng giao diện.
+3. Không bao giờ cắt: test, báo cáo, tài liệu tham khảo đã kiểm chứng.

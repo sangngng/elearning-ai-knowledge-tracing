@@ -1,84 +1,72 @@
-# THIẾT KẾ HỆ THỐNG E-LEARNING CÓ TÍCH HỢP AI (KNOWLEDGE TRACING)
+# Thiết kế Hệ thống E-Learning có tích hợp AI (Knowledge Tracing)
 
 > **Mã đề tài:** HK261-DAGD1-480  
-> **Học phần:** Đồ án Chuyên ngành (ĐACN) ➡️ Đồ án Tốt nghiệp (ĐATN)  
-> **GVHD:** TS. Nguyễn Quốc Minh (Bộ môn Trí tuệ Nhân tạo - Khoa KH&KT Máy tính, ĐH Bách Khoa ĐHQG-HCM)  
-> **Sinh viên thực hiện:**
-> 1. Nguyễn Ngọc Sáng (2353046)
-> 2. Nguyễn Hữu Hào (2352296)
-> 3. Phạm Quang Tuấn (2353275)
+> **Học phần:** Specialized Project (CO4029), học kỳ HK261 (2026-2027)  
+> **GVHD:** TS. Nguyễn Quốc Minh, Khoa Khoa học và Kỹ thuật Máy tính, ĐH Bách Khoa - ĐHQG-HCM  
+> **Sinh viên:** Nguyễn Ngọc Sáng (2353046), Nguyễn Hữu Hào (2352296), Phạm Quang Tuấn (2353275)
 
----
+Định hướng hiện tại của GVHD: hoàn thiện hệ thống E-Learning trước, phần AI làm sau. Chi tiết xem `management/ROADMAP.md`.
 
-## 1. Cấu trúc Thư mục Dự án
+## 1. Cấu trúc thư mục
 
 ```text
-elearning-ai-knowledge-tracing/
-├── backend/                  # REST API (Node.js, Express, TypeScript)
-│   ├── src/                  #   app, routes, middleware, config
-│   ├── db/                   #   schema.sql và schema.dbml (nguồn duy nhất của CSDL)
-│   └── .env.example
-├── frontend/                 # Cổng BKeL (Next.js 14)
-│   ├── app/                  #   trang, components, dữ liệu
-│   └── public/
-├── ai_service/               # Dịch vụ AI (tạm dừng, chỉ có baseline BKT)
+.
+├── backend/        REST API (Node.js, Express, TypeScript)
+│   ├── src/        server.ts, app.ts, config/, middleware/, routes/
+│   └── db/         schema.sql, schema.dbml (nguồn duy nhất của CSDL)
+├── frontend/       Cổng BKeL (Next.js 14)
+├── ai_service/     Dịch vụ AI (tạm dừng, chỉ có baseline BKT)
 ├── docs/
-│   ├── requirements/         # Đặc tả use case
-│   ├── architecture/         # Kiến trúc và pipeline tổng thể
-│   ├── database/             # Từ điển dữ liệu
-│   ├── diagrams/             # Sơ đồ use case, kiến trúc, hoạt động, ERD
-│   └── data/                 # Dữ liệu môn CO2003 (15 buổi, 40 câu hỏi, 11 kỹ năng)
-├── report/                   # Mã nguồn LaTeX của báo cáo (main.tex, content/, images/)
-├── management/               # Lộ trình, bảng công việc, nhật ký họp với GVHD
-├── docker-compose.yml
-└── README.md
+│   ├── requirements/   đặc tả use case
+│   ├── architecture/   kiến trúc và pipeline
+│   ├── database/       từ điển dữ liệu
+│   ├── diagrams/       use case, kiến trúc, hoạt động, ERD
+│   └── data/           dữ liệu CO2003 (15 buổi, 40 câu hỏi, 11 kỹ năng)
+├── report/         mã nguồn LaTeX của báo cáo
+├── management/     lộ trình, bảng công việc, nhật ký họp
+├── CONTRIBUTING.md quy trình làm việc nhóm
+└── docker-compose.yml
 ```
 
-Quy ước: mỗi loại tài liệu chỉ có một bản. Lược đồ CSDL nằm ở `backend/db/`, sơ đồ nằm ở `docs/diagrams/`.
+Quy ước: mỗi loại tài liệu chỉ có một bản. Lược đồ CSDL ở `backend/db/`, sơ đồ ở `docs/diagrams/`.
 
----
+## 2. Chạy hệ thống
 
-## 2. Hướng dẫn Chạy Thử nghiệm Từng Thành phần
+Yêu cầu: Node.js LTS, Docker (hoặc PostgreSQL 15 cài sẵn).
 
-### 2.1. Kiểm tra Dữ liệu & Chạy Thuật toán AI Baseline
 ```bash
-# 1. Chạy thống kê dữ liệu benchmark ASSISTments:
-python ai_service/datasets/inspect_dataset.py
-
-# 2. Chạy thuật toán mô hình cơ sở BKT:
-python ai_service/models/bkt_baseline.py
-```
-
-### 2.2. Khởi động Web Frontend (Next.js)
-```bash
-cd frontend
-npm install
-npm run dev
-# Truy cập giao diện tại: http://localhost:3000
-```
-
-### 2.3. Khởi động Backend API (Node.js)
-```bash
-cd backend
-npm install
-npm start
-# API chạy tại: http://localhost:5000
-```
-
-### 2.4. Khởi chạy Toàn bộ Hệ thống bằng Docker Compose
-```bash
+# 1. Cơ sở dữ liệu (tự áp dụng backend/db/schema.sql)
 docker compose up -d
-# PostgreSQL: port 5432
-# Backend API: port 5000
-# AI Service: port 8000
-# Web Frontend: port 3000
+
+# 2. Backend: http://localhost:8080
+cd backend
+cp .env.example .env            # đặt JWT_SECRET và DATABASE_URL
+npm ci && npm run dev
+
+# 3. Frontend: http://localhost:3000
+cd ../frontend
+cp .env.example .env.local
+npm ci && npm run dev
 ```
 
-### 2.3. Biên dịch báo cáo
+Kiểm tra: `curl http://localhost:8080/health` trả về `{"status":"ok"}`; `cd backend && npm run typecheck`.
+
+Chạy trọn bộ bằng container (sau khi có Dockerfile, nhiệm vụ S1-4): `JWT_SECRET=<chuỗi bí mật> docker compose --profile app up -d --build`.
+
+## 3. Dịch vụ AI (tạm dừng)
+
+```bash
+python ai_service/datasets/inspect_dataset.py   # thống kê dữ liệu ASSISTments mẫu
+python ai_service/models/bkt_baseline.py        # baseline BKT
+```
+
+## 4. Biên dịch báo cáo
+
 ```bash
 cd report
 pdflatex main.tex && pdflatex main.tex
 ```
 
-### 2.4. Quản lý tiến độ
-Xem `management/ROADMAP.md` (lộ trình), `management/TASKS.md` (phân công) và `management/MEETINGS.md` (nhật ký họp).
+## 5. Quản lý tiến độ
+
+`management/ROADMAP.md` (lộ trình và tiêu chí), `management/TASKS.md` (phân công), `management/MEETINGS.md` (nhật ký họp). Quy trình nhánh, pull request và review: `CONTRIBUTING.md`.

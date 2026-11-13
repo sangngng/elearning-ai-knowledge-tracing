@@ -24,8 +24,6 @@ erDiagram
   questions ||--o{ quiz_interactions : emits
   course_sessions ||--o{ attendance_pin_attempts : limits
   users ||--o{ attendance_pin_attempts : makes
-  courses ||--o{ lessons : legacy_content
-  lessons o|--o{ quizzes : legacy_link
 ```
 
 ## Table specifications
@@ -82,7 +80,7 @@ Records PIN validation attempts to limit guessing. Five failed attempts for one 
 
 ### `quizzes`
 
-New quizzes require a `session_id`, so each assessment belongs to a class session. `lesson_id` remains nullable for backward compatibility. Existing quizzes have a nullable session link until explicitly mapped; a not-valid check constraint preserves those rows while requiring new quizzes to link a session.
+Every quiz belongs to a class session through `session_id` (required), so each assessment is tied to one lesson of one class.
 
 ### `skills`
 
@@ -94,22 +92,18 @@ Question prompt and JSONB options associated with a quiz and skill. `position` i
 
 ### `quiz_interactions`
 
-One response event per attempt: `user_id`, `session_id`, `question_id`, `skill_id`, `is_correct`, `attempt_count`, and `created_at`. The composite `(question_id, skill_id)` FK prevents the telemetry skill from diverging from its question. Earlier events retain a nullable `session_id`; a not-valid check constraint preserves those rows while requiring new events to include a session.
-
-### `lessons` (legacy)
-
-Retained for the original lesson API and historical quiz links. New quizzes are tied to `course_sessions`.
+One response event per attempt: `user_id`, `session_id`, `question_id`, `skill_id`, `is_correct`, `attempt_count`, and `created_at`. The composite `(question_id, skill_id)` FK prevents the telemetry skill from diverging from its question.
 
 ### `schema_version`
 
-Records installed schema version; the script inserts the version number idempotently after its tables, constraints, and indexes.
+Records the installed schema version; the script inserts the version number idempotently after its tables, constraints, and indexes.
 
 ## Delete behavior
 
 - `course_classes → course_sessions → session_materials / attendance_records / quizzes / quiz_interactions / attendance_pin_attempts`: cascade.
 - `course_classes → enrollments`: cascade.
 - `users → enrollments / attendance_records / quiz_interactions / attendance_pin_attempts`: cascade.
-- `courses → course_classes / lessons`: cascade.
+- `courses → course_classes`: cascade.
 - Semester and instructor references use `RESTRICT` to avoid orphaning active academic offerings.
 - Skill references use `RESTRICT`; question/session deletion cascades through quiz interactions.
 
