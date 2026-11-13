@@ -5,7 +5,7 @@
 > **GVHD:** TS. Nguyễn Quốc Minh, Khoa Khoa học và Kỹ thuật Máy tính, ĐH Bách Khoa - ĐHQG-HCM  
 > **Sinh viên:** Nguyễn Ngọc Sáng (2353046), Nguyễn Hữu Hào (2352296), Phạm Quang Tuấn (2353275)
 
-Định hướng hiện tại của GVHD: hoàn thiện hệ thống E-Learning trước, phần AI làm sau. Chi tiết xem `management/ROADMAP.md`.
+Định hướng của GVHD: AI là phần nhỏ, ưu tiên hoàn thiện hệ thống E-Learning trước. Chi tiết xem `management/ROADMAP.md`.
 
 ## 1. Cấu trúc thư mục
 
@@ -15,7 +15,7 @@
 │   ├── src/        server.ts, app.ts, config/, middleware/, routes/
 │   └── db/         schema.sql, schema.dbml (nguồn duy nhất của CSDL)
 ├── frontend/       Cổng BKeL (Next.js 14)
-├── ai_service/     Dịch vụ AI (tạm dừng, chỉ có baseline BKT)
+├── ai_service/     Dịch vụ AI (giai đoạn nghiên cứu, hiện có baseline BKT)
 ├── docs/
 │   ├── requirements/   đặc tả use case
 │   ├── architecture/   kiến trúc và pipeline
@@ -53,7 +53,7 @@ Kiểm tra: `curl http://localhost:8080/health` trả về `{"status":"ok"}`; `c
 
 Chạy trọn bộ bằng container (sau khi có Dockerfile, nhiệm vụ S1-4): `JWT_SECRET=<chuỗi bí mật> docker compose --profile app up -d --build`.
 
-## 3. Dịch vụ AI (tạm dừng)
+## 3. Dịch vụ AI (giai đoạn nghiên cứu)
 
 ```bash
 python ai_service/datasets/inspect_dataset.py   # thống kê dữ liệu ASSISTments mẫu

@@ -52,10 +52,12 @@ Phụ thuộc: S1-1 cần S1-3 và S1-14; S1-6 cần S1-3; S1-17 cần S1-8, S1-
 | S2-6 | Báo cáo đạt 50 trang (mốc 30/11) | Cả nhóm | 30/11 |
 | S2-7 | Test end-to-end toàn bộ use case và danh sách lỗi | Tuấn | 04/12 |
 | S2-8 | Sửa lỗi, kiểm tra hiệu năng truy vấn lịch và tổng hợp điểm danh | Hào, Sang | 05/12 |
+| S2-9 | Làn AI giai đoạn A: ghi chú BKT/DKT, hợp đồng dữ liệu và API, chạy baseline BKT | Sang | 06/12 |
+| S2-10 | Hào hỗ trợ: endpoint hoặc script xuất `quiz_interactions` ra CSV đúng hợp đồng dữ liệu | Hào | 06/12 |
 
 ## Sprint 3: 07/12 - 20/12 (mục tiêu: chất lượng và báo cáo 70 trang)
 
-Báo cáo kiểm thử, rà soát bảo mật, kiểm tra khả dụng và truy cập, báo cáo 70 trang vào 15/12, bản nháp slide, tập dượt họp lần 7. Phân công chi tiết lập vào 06/12 sau khi có phản hồi của GVHD.
+Làn AI giai đoạn B và C (xem `ROADMAP.md`, mục 5), báo cáo kiểm thử, rà soát bảo mật, kiểm tra khả dụng và truy cập, báo cáo 70 trang vào 15/12, bản nháp slide, tập dượt họp lần 7. Phân công chi tiết lập vào 06/12 sau khi có phản hồi của GVHD.
 
 ## Sprint 4: 21/12 - 31/12
 

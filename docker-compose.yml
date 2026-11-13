@@ -1,7 +1,7 @@
 # Default: `docker compose up -d` starts PostgreSQL only and applies backend/db/schema.sql.
 # Application containers are opt-in profiles and need the Dockerfiles from task S1-4:
 #   docker compose --profile app up -d --build
-#   docker compose --profile ai up -d --build      (AI service is parked, see management/ROADMAP.md)
+#   docker compose --profile ai up -d --build      (AI lane, see management/ROADMAP.md section 5)
 services:
   postgres:
     image: postgres:15-alpine

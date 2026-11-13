@@ -21,7 +21,7 @@ Mục tiêu buổi họp: cho Thầy thấy hệ thống chạy thật và báo 
 1. Báo cáo mốc 30 trang đã đạt, cấu trúc báo cáo và kế hoạch lên 50 trang (5 phút).
 2. Demo hệ thống trên dữ liệu seed (15 phút): đăng nhập giảng viên, xem thời khóa biểu, mở PIN; đăng nhập sinh viên, check-in bằng PIN; xem tổng hợp điểm danh.
 3. Kết quả kiểm thử T13-T16, test PIN và test sĩ số (5 phút).
-4. Hỏi ý kiến Thầy (5 phút): nội dung buổi 5 khi AI chưa làm (lộ trình cũ ghi tích hợp AI); mức độ chi tiết mong muốn của mục kiểm thử; có cần thêm chức năng LMS nào.
+4. Hỏi ý kiến Thầy (5 phút): trọng tâm buổi 5 là hệ thống hoàn chỉnh, AI chỉ nghiên cứu nhẹ (lộ trình cũ ghi tích hợp AI); khi nào Thầy muốn thấy AI; mức độ chi tiết mong muốn của mục kiểm thử; có cần thêm chức năng LMS nào.
 
 **Danh sách kiểm trước họp (hạn 21/11 tối)**
 - [ ] `docker compose` hoặc hướng dẫn README chạy sạch từ đầu trên một máy khác.
