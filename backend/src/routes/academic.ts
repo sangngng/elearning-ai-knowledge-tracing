@@ -281,10 +281,11 @@ academicRouter.post('/api/sessions/:sessionId/attendance/check-in', requireRoles
     }
     const checkin = await client.query(
       `INSERT INTO attendance_records (session_id, user_id, status, checkin_time, method)
-       VALUES ($1, $2,
-         CASE WHEN timezone('Asia/Ho_Chi_Minh', now()) > (session_date + start_time)
+       SELECT cs.id, $2::uuid,
+         CASE WHEN timezone('Asia/Ho_Chi_Minh', now()) > (cs.session_date + cs.start_time)
               THEN 'late' ELSE 'present' END,
-         now(), 'pin')
+         now(), 'pin'
+       FROM course_sessions cs WHERE cs.id = $1::uuid
        ON CONFLICT (session_id, user_id) DO NOTHING
        RETURNING id, status, checkin_time`,
       [sessionId, req.user!.id],
