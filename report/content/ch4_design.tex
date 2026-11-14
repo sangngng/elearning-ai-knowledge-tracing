@@ -232,7 +232,7 @@ All tables are in 3NF: each non-key attribute depends on the key only. Examples 
 
 \subsubsection{Integrity Mechanisms}
 
-\paragraph{Capacity trigger.} Listing~\ref{lst:trigger} shows the trigger function. The statement \texttt{SELECT ... FOR UPDATE} locks the class row, so two concurrent enrollments into the same class are processed one after the other; the second one sees the first. This prevents the anomaly described in Section~\ref{sec:method}~\cite{berenson1995critique, bernstein1981concurrency, postgresdocs}.
+\paragraph{Capacity trigger.} Listing~\ref{lst:trigger} shows the trigger function. The statement \texttt{SELECT ... FOR UPDATE} locks the class row, so two concurrent enrollments into the same class are processed one after the other; the second one sees the first. This prevents the anomaly described in Section~\ref{ch:background}~\cite{berenson1995critique, bernstein1981concurrency, postgresdocs}.
 
 \begin{lstlisting}[language=SQLpg, caption={Capacity enforcement trigger (excerpt of \texttt{schema.sql})}, label={lst:trigger}]
 CREATE OR REPLACE FUNCTION enforce_course_class_capacity() RETURNS trigger AS $$

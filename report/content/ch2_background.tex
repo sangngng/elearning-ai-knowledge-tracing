@@ -28,7 +28,7 @@ Need & Generic LMS (default) & Proposed system\\
 Offering of a course in a semester with a capacity & Course and enrollment methods; capacity usually handled by the registration system & First-class entities \code{semesters}, \code{course_classes}, \code{enrollments}; capacity enforced by a database trigger\\
 Exactly 15 numbered sessions with date, time and room & Weekly sections with free-form dates & \code{course_sessions} with \code{session_number} in $[1,15]$ and a transactional bulk creation\\
 Proof of presence in class & Attendance via plugin or manual tick & Random four-digit PIN with expiry, rate limit and one record per student and session\\
-Participation per session and per student & Reports depend on the plugin & Dedicated endpoint and statistics page\\
+Participation per session and per student & Reports depend on the plugin & Statistics endpoint and page (per student; per session in progress)\\
 Skill label per question & Question categories (free-form) & \code{skills} table; a question references exactly one skill by foreign key\\
 \end{tblr}
 \end{table}
@@ -86,7 +86,7 @@ PostgreSQL~15 is used as the database. It supports \texttt{UUID} generation thro
 
 \subsubsection{Tools and Practices}
 
-Source code is managed with Git~\cite{chacon2014progit}. The system is developed incrementally with short iterations and frequent feedback from the supervisor, in the spirit of agile development~\cite{beck2001agile, sommerville2016software}. Containerization with Docker~\cite{merkel2014docker} and a continuous-delivery pipeline~\cite{humble2010continuous} are planned for the next semester (Section~\ref{ch:plan}).
+Source code is managed with Git~\cite{chacon2014progit}. The system is developed incrementally with short iterations and frequent feedback from the supervisor, in the spirit of agile development~\cite{beck2001agile, sommerville2016software}. The development database already runs in a Docker container~\cite{merkel2014docker}, started with one command together with a database browser; container images for the API and the front end and a continuous-delivery pipeline~\cite{humble2010continuous} are planned (Section~\ref{ch:plan}).
 
 \subsection{Usability and Accessibility}
 

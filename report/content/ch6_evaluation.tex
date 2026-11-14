@@ -25,26 +25,27 @@ Table~\ref{tab:tests} lists the main test cases. The column ``Status'' reflects 
 \label{tab:tests}
 \begin{tblr}{colspec={Q[l,1.1cm]Q[l,3.6cm]X[l]Q[l,2.1cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\footnotesize}}
 ID & Test & Expected result & Status\\
-T1 & Apply the schema twice & Second run changes nothing and raises no error & Specified\\
-T2 & Insert session number 16 & Rejected by \code{CHECK} & Specified\\
-T3 & Insert a session with end before start & Rejected by \code{CHECK} & Specified\\
-T4 & Set a PIN of 3 digits or without expiry & Rejected by \code{CHECK} & Specified\\
-T5 & Insert two attendance records for the same student and session & Second rejected by \code{UNIQUE} & Specified\\
-T6 & 61 students enroll in a class of capacity 60 (in parallel) & Exactly 60 succeed; the others fail with error 23514 & Specified\\
-T7 & Student calls \code{attendance/open} & HTTP 403 & Specified\\
-T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} & Specified\\
-T9 & Check in after expiry & HTTP 410; PIN cleared & Specified\\
-T10 & Six wrong PINs in 15 minutes & Five get 401, the sixth gets 429 & Specified\\
-T11 & Check in twice with the correct PIN & Second gets 409 & Specified\\
-T12 & Student fetches quiz questions & No \code{correct_answer} field in the response & Specified\\
+T1 & Apply the schema twice & Second run changes nothing and raises no error & Passed\\
+T2 & Insert session number 16 & Rejected by \code{CHECK} & Passed\\
+T3 & Insert a session with end before start & Rejected by \code{CHECK} & Passed\\
+T4 & Set a PIN of 3 digits or without expiry & Rejected by \code{CHECK} & Passed\\
+T5 & Insert two attendance records for the same student and session & Second rejected by \code{UNIQUE} & Passed\\
+T6 & Eight students enroll in parallel into the last free seat of a class & Exactly one succeeds; the others get HTTP 409 (capacity reached) & Passed\\
+T7 & Student calls \code{attendance/open} & HTTP 403 & Passed\\
+T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} & Passed\\
+T9 & Check in after expiry & HTTP 410; PIN cleared & Passed\\
+T10 & Six wrong PINs in 15 minutes & Five get 401, the sixth gets 429 & Passed\\
+T11 & Check in twice with the correct PIN & Second gets HTTP 200 with \texttt{alreadyCheckedIn}; no duplicate record & Passed\\
+T12 & Student fetches quiz questions & No \code{correct_answer} field in the response & Passed\\
 T13 & Login with the sample lecturer and student accounts in the prototype & Role-specific home page is shown & Checked manually\\
 T14 & Switch between light and dark themes and reload & Theme is kept & Checked manually\\
 T15 & Open every course tab in the prototype & No error; screens render & Checked manually\\
 T16 & Open the quiz tab and take a quiz of one session & Questions appear; score shown at the end & Checked manually\\
+T17 & Restart PostgreSQL while the API is serving requests & API stays up and reconnects; requests during the outage get HTTP 500 & Passed\\
 \end{tblr}
 \end{table}
 
-No automated test suite exists yet. Building one is a task of the first weeks of HK262 (Section~\ref{ch:plan}). We deliberately do not report performance figures: the target of NFR6 has not been measured.
+On 14 November 2026 the team ran the database tests T1--T5 directly in PostgreSQL and the API tests T6--T12 and T17 against the running system (PostgreSQL in Docker with the demonstration dataset), using a script of 49 API checks. Forty-three checks passed; the six failures correspond to features that are not implemented yet (manual attendance, per-session statistics, adding session materials, teaching periods in the timetable, and the endpoints that return the current user and his or her classes). Two defects found during this work were fixed: a correct PIN returned HTTP 500, and the API process stopped when the database restarted. The script is being turned into an automated suite that runs with \texttt{npm test}. We deliberately do not report performance figures: the target of NFR6 has not been measured.
 
 \subsection{Evaluation Against Requirements}
 
@@ -75,5 +76,5 @@ UC7 & Summary API; statistics screen & Filters; export; threshold highlighting\\
     \item The question bank is in English while the interface is in Vietnamese; a bilingual bank is planned.
     \item The distribution of questions per skill is uneven (Table~\ref{tab:skills}).
     \item The room and slot of the sample timetable differ between the dataset and the demonstration data.
-    \item There is no automated test suite and no performance measurement.
+    \item The automated test suite is not yet part of the repository, and performance has not been measured.
 \end{enumerate}

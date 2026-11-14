@@ -19,6 +19,7 @@ Back end & Node.js, Express 5, TypeScript & REST API~\cite{nodedocs, expressdocs
 Security libraries & \texttt{bcryptjs}, \texttt{jsonwebtoken} & Password hashing and tokens~\cite{provos1999bcrypt, rfc7519}\\
 Database driver & \texttt{pg} & Parameterized SQL\\
 Database & PostgreSQL 15, \texttt{pgcrypto} & Storage and integrity~\cite{postgresdocs}\\
+Environment & Docker Compose, Adminer & Database container and browser~\cite{merkel2014docker}\\
 Version control & Git & Collaboration of three developers\\
 \end{tblr}
 \end{table}
@@ -59,12 +60,13 @@ const code = randomInt(0, 10_000).toString().padStart(4, '0')
 The check-in endpoint runs in one transaction and follows the steps below. The listing shows the order of the checks; the HTTP status code of each rejection is given in Table~\ref{tab:checkin}.
 
 \begin{enumerate}
-    \item Load the session and verify that the student has an \emph{enrolled} row for its class.
+    \item Validate the input (a session UUID and four digits; otherwise \texttt{400}), load the session (\texttt{404} if unknown) and verify that the student has an \emph{enrolled} row for its class (\texttt{403} otherwise).
+    \item If the student already checked in with the PIN, answer \texttt{200} with \texttt{alreadyCheckedIn} and record nothing.
     \item If the window is closed or the expiry has passed, clear the PIN and answer \texttt{410}.
     \item Take a transaction-level advisory lock on the pair (session, student) so that parallel requests of the same student are processed one at a time.
     \item Count the failed attempts of the student for this session in the last 15 minutes; if there are five or more, answer \texttt{429}.
     \item Compare the PIN with \code{timingSafeEqual}. If different, insert a failed attempt and answer \texttt{401}.
-    \item Insert the attendance record with \code{ON CONFLICT (session_id, user_id) DO NOTHING}. If nothing was inserted, answer \texttt{409}; otherwise log a successful attempt and answer \texttt{201}.
+    \item Insert the attendance record with \code{ON CONFLICT (session_id, user_id) DO NOTHING}. If nothing was inserted (a concurrent request won), answer \texttt{409}; otherwise log a successful attempt and answer \texttt{201}.
 \end{enumerate}
 
 \begin{table}[H]
@@ -74,8 +76,12 @@ The check-in endpoint runs in one transaction and follows the steps below. The l
 \begin{tblr}{colspec={Q[l,1.6cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
 Status & Meaning\\
 201 & Check-in recorded with status \emph{present}. Opening the PIN acts as the roll call, so every valid check-in within the PIN lifetime counts as present; a lecturer records lateness through manual attendance. \\
+200 & The student had already checked in; nothing new is recorded.\\
+400 & Invalid session identifier or PIN format.\\
 401 & The PIN is incorrect; a failed attempt is logged.\\
-409 & The student already has a record for this session.\\
+403 & The student is not enrolled in the class.\\
+404 & The session does not exist.\\
+409 & A concurrent request of the same student created the record first.\\
 410 & The window is closed or expired.\\
 429 & Five failed attempts in the last 15 minutes.\\
 \end{tblr}
@@ -167,7 +173,7 @@ Figures~\ref{fig:login}--\ref{fig:stats} show the main screens. The interface la
 
 \subsubsection{Authentication in the Prototype}
 
-The login page separates the two roles from the first screen instead of offering a role switch on the navigation bar, which a real system would not have. Sample accounts allow the demonstration to start with one click. At the time of writing, the prototype uses data stored in the front end for its demonstration; connecting each page to the REST API is the first task of the next semester (Section~\ref{ch:plan}). We state this clearly so that the reader does not confuse the demonstration data with data coming from the database.
+The login page separates the two roles from the first screen instead of offering a role switch on the navigation bar, which a real system would not have. Sample accounts allow the demonstration to start with one click. At the time of writing, the prototype uses data stored in the front end for its demonstration; connecting each page to the REST API is the current task of the team (November 2026). We state this clearly so that the reader does not confuse the demonstration data with data coming from the database.
 
 \subsection{Pilot Dataset: CO2003}
 \label{sec:dataset}
@@ -229,7 +235,7 @@ Skill code & Content & Questions\\
 
 \paragraph{Example.} Question DSA-Q09 (session 4, skill \code{DSA-LINKEDLIST}, medium): ``To delete the node right after node $p$ (where $p\rightarrow next$ is not NULL), the correct approach is?'' The correct option is: save $q = p\rightarrow next$, set $p\rightarrow next = q\rightarrow next$, then free $q$. The explanation states that the node to delete must be saved before relinking, otherwise the reference is lost.
 
-\paragraph{Remarks on the dataset.} The distribution is not uniform: complexity and recursion have one question each, which is too few for any statistical use. Expanding the bank to at least 3--5 questions per skill is part of the plan for HK262. The sample schedule in the dataset (Tuesday, periods 2--4, room H6-302) is a sample value and differs from the demonstration data of the prototype; both are replaced by the real timetable when the class is registered.
+\paragraph{Remarks on the dataset.} The distribution is not uniform: complexity and recursion have one question each, which is too few for any statistical use. Expanding the bank to at least four questions per skill is in progress. The sample schedule in the dataset (Tuesday, periods 2--4, room H6-302) is a sample value and differs from the demonstration data of the prototype; both are replaced by the real timetable when the class is registered.
 
 \subsection{Traceability: From Requirements to Code}
 
@@ -252,11 +258,11 @@ FR8 & \code{/attendance/open} & Yes & Yes\\
 FR9 & \code{/attendance/check-in} & Yes & Yes\\
 FR10 & Check-in transaction & Yes & Yes\\
 FR11 & \code{/attendance/close}; manual marking & Close only & Yes\\
-FR12 & \code{/attendance/summary} & Yes & Yes\\
+FR12 & \code{/attendance/summary} (per-session rates in progress) & Partial & Yes\\
 FR13 & \code{/quizzes/:id/submit} & Yes & Yes\\
 FR14 & Question creation & No & No\\
 FR15 & Theme variables & --- & Yes\\
 \end{tblr}
 \end{table}
 
-\noindent\textit{Note.} ``UI = Yes'' means that a screen exists in the prototype. The screens currently use demonstration data kept in the front end and are not yet connected to the REST API; the connection is the first task of Section~\ref{ch:plan}.
+\noindent\textit{Note.} ``UI = Yes'' means that a screen exists in the prototype. The screens currently use demonstration data kept in the front end and are not yet connected to the REST API; the connection is in progress.
