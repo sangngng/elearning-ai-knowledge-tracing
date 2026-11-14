@@ -285,12 +285,10 @@ academicRouter.post('/api/sessions/:sessionId/attendance/check-in', requireRoles
       return res.status(401).json({ error: 'Incorrect attendance PIN' })
     }
     const checkin = await client.query(
+      // Opening the PIN is the roll call: a valid check-in within the PIN lifetime is 'present'.
+      // Lateness is recorded by the lecturer through manual attendance.
       `INSERT INTO attendance_records (session_id, user_id, status, checkin_time, method)
-       SELECT cs.id, $2::uuid,
-         CASE WHEN timezone('Asia/Ho_Chi_Minh', now()) > (cs.session_date + cs.start_time)
-              THEN 'late' ELSE 'present' END,
-         now(), 'pin'
-       FROM course_sessions cs WHERE cs.id = $1::uuid
+       VALUES ($1, $2, 'present', now(), 'pin')
        ON CONFLICT (session_id, user_id) DO NOTHING
        RETURNING id, status, checkin_time`,
       [sessionId, req.user!.id],

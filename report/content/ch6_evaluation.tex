@@ -32,7 +32,7 @@ T4 & Set a PIN of 3 digits or without expiry & Rejected by \code{CHECK} & Specif
 T5 & Insert two attendance records for the same student and session & Second rejected by \code{UNIQUE} & Specified\\
 T6 & 61 students enroll in a class of capacity 60 (in parallel) & Exactly 60 succeed; the others fail with error 23514 & Specified\\
 T7 & Student calls \code{attendance/open} & HTTP 403 & Specified\\
-T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} or \emph{late} & Specified\\
+T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} & Specified\\
 T9 & Check in after expiry & HTTP 410; PIN cleared & Specified\\
 T10 & Six wrong PINs in 15 minutes & Five get 401, the sixth gets 429 & Specified\\
 T11 & Check in twice with the correct PIN & Second gets 409 & Specified\\

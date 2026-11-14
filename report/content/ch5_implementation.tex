@@ -73,7 +73,7 @@ The check-in endpoint runs in one transaction and follows the steps below. The l
 \label{tab:checkin}
 \begin{tblr}{colspec={Q[l,1.6cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
 Status & Meaning\\
-201 & Check-in recorded. The status is \emph{late} if the check-in time is after the scheduled start of the session in the Asia/Ho\_Chi\_Minh time zone, and \emph{present} otherwise.\\
+201 & Check-in recorded with status \emph{present}. Opening the PIN acts as the roll call, so every valid check-in within the PIN lifetime counts as present; a lecturer records lateness through manual attendance. \\
 401 & The PIN is incorrect; a failed attempt is logged.\\
 409 & The student already has a record for this session.\\
 410 & The window is closed or expired.\\
