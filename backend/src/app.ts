@@ -1,8 +1,7 @@
 import cors from 'cors'
 import express from 'express'
 import { env } from './config/env'
-import { router } from './routes'
-import { academicRouter } from './routes/academic'
+import { apiRouter } from './routes'
 
 export function createApp() {
   const app = express()
@@ -14,8 +13,7 @@ export function createApp() {
   }))
   app.use(express.json({ limit: '1mb' }))
   app.get('/health', (_req, res) => res.json({ status: 'ok' }))
-  app.use(router)
-  app.use(academicRouter)
+  app.use(apiRouter)
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const databaseError = error as { code?: string; message?: string }
     if (databaseError?.code === '23505') return res.status(409).json({ error: 'A record with these values already exists' })

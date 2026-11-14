@@ -1,17 +1,10 @@
--- E-Learning AI PostgreSQL schema v2.
--- Safe to rerun against v2. When upgrading v1, existing quizzes and quiz_interactions
--- receive nullable session_id columns so historical rows are preserved; new v2 rows
--- created from a fresh database require a session.
+-- E-Learning AI PostgreSQL schema (14 tables, 3NF).
+-- Safe to rerun: every statement is idempotent.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 DO $$ BEGIN
   CREATE TYPE user_role AS ENUM ('student', 'instructor', 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  CREATE TYPE lesson_content_type AS ENUM ('video', 'document', 'text');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -32,19 +25,6 @@ CREATE TABLE IF NOT EXISTS courses (
   description TEXT,
   is_published BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Kept for compatibility with the original lesson API and historical content.
-CREATE TABLE IF NOT EXISTS lessons (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  title VARCHAR(200) NOT NULL,
-  description TEXT,
-  content_type lesson_content_type NOT NULL,
-  content_url TEXT,
-  position INTEGER NOT NULL CHECK (position > 0),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (course_id, position)
 );
 
 CREATE TABLE IF NOT EXISTS skills (
@@ -148,25 +128,13 @@ CREATE TABLE IF NOT EXISTS session_materials (
   UNIQUE (session_id, position)
 );
 
--- v1 had lesson_id. It remains nullable for old rows; v2 quizzes use session_id.
 CREATE TABLE IF NOT EXISTS quizzes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  lesson_id UUID REFERENCES lessons(id) ON DELETE SET NULL,
   session_id UUID NOT NULL REFERENCES course_sessions(id) ON DELETE CASCADE,
   title VARCHAR(200) NOT NULL,
   is_published BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-ALTER TABLE quizzes
-  ADD COLUMN IF NOT EXISTS session_id UUID REFERENCES course_sessions(id) ON DELETE CASCADE;
-ALTER TABLE quizzes ALTER COLUMN lesson_id DROP NOT NULL;
-ALTER TABLE quizzes DROP CONSTRAINT IF EXISTS quizzes_session_or_legacy_lesson_chk;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'quizzes_session_required_v2_chk') THEN
-    ALTER TABLE quizzes ADD CONSTRAINT quizzes_session_required_v2_chk
-      CHECK (session_id IS NOT NULL) NOT VALID;
-  END IF;
-END $$;
 
 CREATE TABLE IF NOT EXISTS questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -192,14 +160,6 @@ CREATE TABLE IF NOT EXISTS quiz_interactions (
   CONSTRAINT quiz_interactions_question_skill_fk
     FOREIGN KEY (question_id, skill_id) REFERENCES questions(id, skill_id) ON DELETE CASCADE
 );
-ALTER TABLE quiz_interactions
-  ADD COLUMN IF NOT EXISTS session_id UUID REFERENCES course_sessions(id) ON DELETE CASCADE;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'quiz_interactions_session_required_v2_chk') THEN
-    ALTER TABLE quiz_interactions ADD CONSTRAINT quiz_interactions_session_required_v2_chk
-      CHECK (session_id IS NOT NULL) NOT VALID;
-  END IF;
-END $$;
 
 CREATE TABLE IF NOT EXISTS attendance_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -237,19 +197,6 @@ CREATE INDEX IF NOT EXISTS quiz_interactions_user_skill_time_idx ON quiz_interac
 CREATE INDEX IF NOT EXISTS quiz_interactions_session_user_time_idx ON quiz_interactions(session_id, user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS quiz_interactions_question_attempt_idx ON quiz_interactions(user_id, question_id, attempt_count DESC);
 
--- Preserve skill/question consistency when applying this script to a v1 database.
-DO $$ BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'quiz_interactions'::regclass
-      AND pg_get_constraintdef(oid) LIKE 'FOREIGN KEY (question_id, skill_id)%'
-  ) THEN
-    ALTER TABLE quiz_interactions
-      ADD CONSTRAINT quiz_interactions_question_skill_fk
-      FOREIGN KEY (question_id, skill_id) REFERENCES questions(id, skill_id) ON DELETE CASCADE;
-  END IF;
-END $$;
-
 COMMENT ON COLUMN questions.correct_answer IS 'Private answer key. Never include this column in learner-facing API responses.';
 COMMENT ON COLUMN course_sessions.attendance_code IS 'Four-digit PIN returned only to the assigned instructor while the attendance window is active.';
 
@@ -257,4 +204,4 @@ CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY CHECK (version > 0),
   applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-INSERT INTO schema_version (version) VALUES (2) ON CONFLICT (version) DO NOTHING;
+INSERT INTO schema_version (version) VALUES (1) ON CONFLICT (version) DO NOTHING;

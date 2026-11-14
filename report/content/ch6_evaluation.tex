@@ -1,0 +1,79 @@
+\section{Testing, Current Status and Discussion}
+\label{ch:eval}
+
+This section reports what has been verified so far, what is still missing, and how the result compares with the requirements. We keep the three categories separate on purpose: a test that has been \emph{run}, a test that is \emph{specified but not run}, and a feature that is \emph{not implemented}.
+
+\subsection{Test Strategy}
+
+Testing follows the usual levels of software verification~\cite{sommerville2016software}:
+
+\begin{itemize}
+    \item \textbf{Database level.} Apply \code{schema.sql} to an empty database; verify each constraint with a statement that must fail.
+    \item \textbf{API level.} Call each endpoint with valid and invalid input and with each role; verify status codes and bodies.
+    \item \textbf{Concurrency level.} Fire parallel enrollment requests at a class that has one free seat, and parallel wrong-PIN requests from one student.
+    \item \textbf{Interface level.} Walk through each use case in the browser in both themes and on three viewport widths.
+    \item \textbf{Usability level.} Task-based test with students and a SUS questionnaire~\cite{brooke1996sus, bangor2008empirical}.
+\end{itemize}
+
+\subsection{Test Cases}
+
+Table~\ref{tab:tests} lists the main test cases. The column ``Status'' reflects the situation at the date of this report.
+
+\begin{table}[H]
+\centering
+\caption{Main test cases and status}
+\label{tab:tests}
+\begin{tblr}{colspec={Q[l,1.1cm]Q[l,3.6cm]X[l]Q[l,2.1cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\footnotesize}}
+ID & Test & Expected result & Status\\
+T1 & Apply the schema twice & Second run changes nothing and raises no error & Specified\\
+T2 & Insert session number 16 & Rejected by \code{CHECK} & Specified\\
+T3 & Insert a session with end before start & Rejected by \code{CHECK} & Specified\\
+T4 & Set a PIN of 3 digits or without expiry & Rejected by \code{CHECK} & Specified\\
+T5 & Insert two attendance records for the same student and session & Second rejected by \code{UNIQUE} & Specified\\
+T6 & 61 students enroll in a class of capacity 60 (in parallel) & Exactly 60 succeed; the others fail with error 23514 & Specified\\
+T7 & Student calls \code{attendance/open} & HTTP 403 & Specified\\
+T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} or \emph{late} & Specified\\
+T9 & Check in after expiry & HTTP 410; PIN cleared & Specified\\
+T10 & Six wrong PINs in 15 minutes & Five get 401, the sixth gets 429 & Specified\\
+T11 & Check in twice with the correct PIN & Second gets 409 & Specified\\
+T12 & Student fetches quiz questions & No \code{correct_answer} field in the response & Specified\\
+T13 & Login with the sample lecturer and student accounts in the prototype & Role-specific home page is shown & Checked manually\\
+T14 & Switch between light and dark themes and reload & Theme is kept & Checked manually\\
+T15 & Open every course tab in the prototype & No error; screens render & Checked manually\\
+T16 & Open the quiz tab and take a quiz of one session & Questions appear; score shown at the end & Checked manually\\
+\end{tblr}
+\end{table}
+
+No automated test suite exists yet. Building one is a task of the first weeks of HK262 (Section~\ref{ch:plan}). We deliberately do not report performance figures: the target of NFR6 has not been measured.
+
+\subsection{Evaluation Against Requirements}
+
+Table~\ref{tab:coverage} summarizes the coverage of the use cases.
+
+\begin{table}[H]
+\centering
+\caption{Coverage of use cases at the date of this report}
+\label{tab:coverage}
+\begin{tblr}{colspec={Q[l,1.2cm]X[l]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
+UC & Done & Missing\\
+UC1 & Login and registration API; login page; course cards & Password reset; progress tracking of material views\\
+UC2 & Quiz screens; submission API storing one record per answer & Offline retry; resume; timer\\
+UC3 & Schema supports questions with a skill & Authoring screen and API\\
+UC5 & Bulk and single creation; schedule API; timetable and sessions screens & Edit and delete; room-conflict check\\
+UC6 & Open, close, check-in, rate limit, expiry sweep, record & Manual marking; regenerate PIN\\
+UC7 & Summary API; statistics screen & Filters; export; threshold highlighting\\
+\end{tblr}
+\end{table}
+
+\subsection{Limitations}
+
+\begin{enumerate}
+    \item The front end is not yet connected to the API; screens use demonstration data.
+    \item The CAS login page is a reproduction and does not authenticate with the real HCMUT service.
+    \item The PIN is stored in clear text in \code{attendance_code} while the window is open (it is cleared at close). This is acceptable for a value that lives minutes and is shown to the lecturer, but it means that anybody with read access to the database can read an active PIN. Hashing would not help because the lecturer must see the PIN.
+    \item A four-digit PIN does not stop a present student from sharing it with an absent one (Section~\ref{sec:pin-security}).
+    \item The question bank is in English while the interface is in Vietnamese; a bilingual bank is planned.
+    \item The distribution of questions per skill is uneven (Table~\ref{tab:skills}).
+    \item The room and slot of the sample timetable differ between the dataset and the demonstration data.
+    \item There is no automated test suite and no performance measurement.
+\end{enumerate}

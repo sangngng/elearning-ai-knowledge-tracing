@@ -1,0 +1,92 @@
+\section{Introduction}
+\label{ch:intro}
+
+\subsection{Context and Motivation}
+
+Over the last two decades, the Learning Management System has become the standard infrastructure through which universities deliver courses, collect assignments and communicate with students~\cite{ellis2009field}. A systematic review of LMS adoption in higher education shows that institutions mostly choose between a small number of mature platforms, and that Moodle is one of the most widely used open-source options~\cite{kasim2016choosing, dougiamas2003moodle}. Ho Chi Minh City University of Technology (HCMUT) follows this pattern: its BKeL portal is a customized Moodle deployment that students open every day to see their courses.
+
+A general-purpose LMS has to serve every faculty and every teaching style, so its data model is deliberately generic: a course contains topics, a topic contains activities. This generality is a strength for the platform operator, but it leaves some everyday needs of a lecturer to plugins and manual conventions. In a typical engineering course at HCMUT, the lecturer meets the same group of students for fifteen weekly sessions in a fixed room. The lecturer needs to know who attended each session, how the attendance of the whole class evolves over the semester, and which students are at risk of failing the attendance requirement. Attendance matters in practice: a meta-analysis of the literature found that class attendance is a strong predictor of university grades, stronger than several other commonly studied predictors~\cite{crede2010class}, and large-scale studies of student behavior confirm the link between regular attendance and academic performance~\cite{kassarnig2018academic}.
+
+At the same time, in-class attendance is easy to abuse. A plain ``tick'' button or a QR code posted on a slide can be shared with absent classmates through a messaging application within seconds. A mechanism is needed that proves the student is present while the lecturer is running the session, and that is simple enough to be used in the first five minutes of a lecture.
+
+\subsection{Problem Statement}
+
+The project aims at an e-learning platform that behaves like a real university LMS rather than a collection of quiz pages. Concretely, the problems addressed in this report are:
+
+\begin{enumerate}
+    \item \textbf{Academic structure.} The system must represent semesters, courses, course classes (an offering of a course in one semester, e.g.\ CO2003--CC01 in HK261), enrollments with a maximum capacity, and the fifteen numbered sessions of each class with date, time and room.
+    \item \textbf{Trustworthy attendance.} The system must let the lecturer open an attendance window in class and generate a random PIN that is valid for a short time. Students check in with the PIN. The system must prevent duplicate check-ins, guessing of the PIN and check-in after the window is closed.
+    \item \textbf{Course content per session.} Every session must have its own materials (slides, code, videos) so that students can find what belongs to ``Week 7'' without searching.
+    \item \textbf{Reports for the lecturer.} The lecturer must see enrollment against capacity, the participation rate of every session and the attendance rate of every student.
+    \item \textbf{Familiar user experience.} The interface must feel familiar to HCMUT users: the BKeL color scheme, the Moodle-style course cards and activity icons, and a clear separation between the lecturer and the student role from the login screen.
+    \item \textbf{A sound data foundation.} The relational schema must be normalized, protect its invariants through constraints and a trigger, and keep the data produced by quizzes in a form that later analysis can use.
+\end{enumerate}
+
+\subsection{Objectives and Scope}
+
+The general objective of the project is to build an adaptive e-learning system for university teaching. Following the feedback of the supervisor after the third meeting (25 October 2026), the work is organized in two phases. This report covers \textbf{Phase~1}: a complete, well-engineered e-learning system. Phase~2, planned for the second semester (HK262), extends the system with intelligent learning support and evaluates it with real users; it is only outlined in Section~\ref{ch:plan}.
+
+The specific objectives of Phase~1 are to:
+
+\begin{itemize}
+    \item analyze the requirements of lecturers and students and express them as use cases;
+    \item design a three-tier architecture and a relational schema in third normal form (3NF);
+    \item implement a REST API with authentication, authorization and the attendance mechanism;
+    \item implement a front-end prototype that follows the BKeL visual identity;
+    \item prepare a realistic dataset for one pilot course, \emph{Data Structures and Algorithms} (CO2003), including a fifteen-session outline and a labeled bank of forty multiple-choice questions;
+    \item document the design, the known limitations and a plan for the next semester.
+\end{itemize}
+
+\paragraph{Scope.} The pilot course is CO2003 (4 credits), class CC01, in the active semester HK261. The report covers: authentication and roles, schedule and timetable, session materials, PIN-based attendance, enrollment and attendance statistics, and the question bank. It does \emph{not} cover payment, grading workflows, a forum, or integration with the real HCMUT CAS server; the CAS login page in the prototype is a visual reproduction.
+
+\subsection{Contributions}
+
+The main contributions of the first phase are:
+
+\begin{enumerate}
+    \item a \textbf{use-case model} of seven use cases, of which UC5--UC7 (sessions and timetable, PIN attendance, attendance statistics) are specified in full detail;
+    \item a \textbf{fourteen-table relational schema} with composite foreign keys, check constraints, partial unique indexes and a row-locking trigger that guarantees class capacity under concurrent enrollment;
+    \item a \textbf{PIN attendance protocol} that combines a cryptographically secure random generator, a short expiry, a background sweep, a constant-time comparison, one record per student and session, and rate limiting;
+    \item a \textbf{front-end prototype} with 100\% vector icons, light and dark themes, and the pages ``My courses'', ``Sessions'', ``Attendance'', ``Timetable'', ``Statistics'' and ``Quiz'';
+    \item a \textbf{pilot dataset} for CO2003: fifteen sessions, eleven skill labels and forty questions with answers and explanations.
+\end{enumerate}
+
+\subsection{Team and Division of Work}
+
+The project is carried out by three students under the supervision of Dr.\ Nguyen Quoc Minh. Table~\ref{tab:team} shows the responsibilities of each member.
+
+\begin{table}[H]
+\centering
+\caption{Team members and responsibilities}
+\label{tab:team}
+\begin{tblr}{colspec={Q[l,3.4cm]Q[l,2.2cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
+Member & Student ID & Responsibility\\
+Nguyen Ngoc Sang & 2353046 & Overall architecture, Next.js front end (BKeL portal), integration, coordination\\
+Nguyen Huu Hao & 2352296 & PostgreSQL schema (3NF), Express/TypeScript REST API, attendance PIN security, triggers\\
+Pham Quang Tuan & 2353275 & Requirements analysis and use cases, CO2003 dataset, session outline, question bank labeled by skill\\
+\end{tblr}
+\end{table}
+
+\subsection{Report Organization}
+
+The remainder of this report is organized as follows. Section~\ref{ch:background} reviews the background: LMS platforms, the BKeL portal and the technologies used. Section~\ref{ch:req} presents the requirements and use cases. Section~\ref{ch:design} describes the methodology, the overall pipeline, the architecture and the database design. Section~\ref{ch:impl} describes the implementation, the prototype and the dataset. Section~\ref{ch:eval} reports the testing performed so far and discusses limitations. Section~\ref{ch:plan} concludes and gives the plan for weeks 1--15 of the graduation project in HK262.
+
+\subsection{Milestones of the Specialized Project}
+
+Table~\ref{tab:meetings} lists the meetings with the supervisor and the state of each milestone at the time of writing.
+
+\begin{table}[H]
+\centering
+\caption{Meetings with the supervisor and project milestones}
+\label{tab:meetings}
+\begin{tblr}{colspec={Q[l,1.2cm]Q[l,2.6cm]X[l]Q[l,2.4cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
+No. & Date & Content & Status\\
+1 & 27/09/2026 & Agree on the outline and division of responsibilities & Done\\
+2 & 11/10/2026 & Survey of background material and the plan of the system & Done\\
+3 & 25/10/2026 & Initial architecture, four core use cases; feedback: strengthen the database and add university-level LMS features & Done\\
+4 & 10/11/2026 & Database ERD (14 tables), pilot course CO2003 (15 sessions, timetable, PIN attendance, statistics) on the BKeL-style portal & Ready\\
+5 & 22/11/2026 & Review of the report draft and of the completed system (report milestones: at least 30 pages on 15/11) & Planned\\
+6--7 & 12/2026 & Testing, refinement and report revision (at least 50 pages on 30/11 and 70 pages on 15/12) & Planned\\
+8 & 31/12/2026 & Final defense of the specialized project (CO4029) & Planned\\
+\end{tblr}
+\end{table}

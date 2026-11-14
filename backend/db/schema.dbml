@@ -1,18 +1,12 @@
-Project elearning_ai_v2 {
+Project elearning_ai {
   database_type: 'PostgreSQL'
-  Note: 'v2 academic schedule, class enrollment, attendance PIN, and per-session quiz telemetry schema'
+  Note: 'Academic schedule, class enrollment, attendance PIN, and per-session quiz telemetry schema'
 }
 
 Enum user_role {
   student
   instructor
   admin
-}
-
-Enum lesson_content_type {
-  video
-  document
-  text
 }
 
 Table users {
@@ -135,8 +129,7 @@ Table attendance_pin_attempts {
 
 Table quizzes {
   id uuid [pk]
-  lesson_id uuid [note: 'Nullable legacy link retained for v1 quizzes']
-  session_id uuid [not null, note: 'Each v2 quiz belongs to a class session']
+  session_id uuid [not null, note: 'Each quiz belongs to a class session']
   title varchar(200) [not null]
   is_published boolean [not null, default: false]
   created_at timestamptz [not null]
@@ -182,16 +175,9 @@ Table quiz_interactions {
   }
 }
 
-Table lessons {
-  Note: 'Legacy v1 content table retained for existing lesson API/data.'
-  id uuid [pk]
-  course_id uuid [not null]
-  title varchar(200) [not null]
-  description text
-  content_type lesson_content_type [not null]
-  content_url text
-  position int [not null]
-  created_at timestamptz [not null]
+Table schema_version {
+  version int [pk]
+  applied_at timestamptz [not null]
 }
 
 Ref: courses.instructor_id > users.id [delete: restrict]
@@ -206,7 +192,6 @@ Ref: attendance_records.session_id > course_sessions.id [delete: cascade]
 Ref: attendance_records.user_id > users.id [delete: cascade]
 Ref: attendance_pin_attempts.session_id > course_sessions.id [delete: cascade]
 Ref: attendance_pin_attempts.user_id > users.id [delete: cascade]
-Ref: quizzes.lesson_id > lessons.id [delete: set null]
 Ref: quizzes.session_id > course_sessions.id [delete: cascade]
 Ref: questions.quiz_id > quizzes.id [delete: cascade]
 Ref: questions.skill_id > skills.id [delete: restrict]
@@ -215,4 +200,3 @@ Ref: quiz_interactions.session_id > course_sessions.id [delete: cascade]
 Ref: quiz_interactions.question_id > questions.id [delete: cascade]
 Ref: quiz_interactions.skill_id > skills.id [delete: restrict]
 Ref: quiz_interactions.(question_id, skill_id) > questions.(id, skill_id) [delete: cascade]
-Ref: lessons.course_id > courses.id [delete: cascade]

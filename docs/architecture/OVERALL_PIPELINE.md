@@ -19,13 +19,13 @@ graph TD
 
     subgraph APILayer ["2. Application Backend Layer (Node.js / Express API)"]
         AuthService["Auth & RBAC Service<br/>(JWT + Bcrypt)"]
-        CourseService["Curriculum Service<br/>(Courses, Lessons, Quizzes)"]
+        CourseService["Curriculum Service<br/>(Courses, Sessions, Quizzes)"]
         InteractionService["Interaction Logging Service<br/>(Telemetry Ingestion)"]
         AIProxy["AI Orchestration Gateway<br/>(Feature Extraction & Cache)"]
     end
 
     subgraph DataLayer ["3. Persistence Layer"]
-        Postgres[(PostgreSQL 15+<br/>• Users, Courses, Lessons<br/>• Skills & Questions<br/>• quiz_interactions)]
+        Postgres[(PostgreSQL 15+<br/>• Users, Courses, Sessions<br/>• Skills & Questions<br/>• quiz_interactions)]
     end
 
     subgraph AIEngine ["4. AI & Knowledge Tracing Microservice (FastAPI / PyTorch)"]
@@ -101,9 +101,9 @@ All diagrams have been created following academic UML standards and are provided
 
 | Figure | Diagram Name | Draw.io Source File | Rendered PNG Image |
 | :--- | :--- | :--- | :--- |
-| **Figure 3.1** | **Overall UML Use Case Diagram** | [`01_use_case_diagram.drawio`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/01_use_case_diagram.drawio) | [`01_use_case_diagram.png`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/01_use_case_diagram.png) |
-| **Figure 4.1** | **Decoupled 3-Tier System Architecture** | [`02_system_architecture.drawio`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/02_system_architecture.drawio) | [`02_system_architecture.png`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/02_system_architecture.png) |
-| **Figure 4.2** | **UML Activity Diagram (Quiz & Telemetry)** | [`03_activity_diagram.drawio`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/03_activity_diagram.drawio) | [`03_activity_diagram.png`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/03_activity_diagram.png) |
-| **Figure 5.1** | **DKT Mathematical Inference Pipeline** | [`04_ai_pipeline_diagram.drawio`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/04_ai_pipeline_diagram.drawio) | [`04_ai_pipeline_diagram.png`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/04_ai_pipeline_diagram.png) |
-| **Figure 5.2** | **Relational Database Schema (ERD)** | [`schema.dbml`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/database/schema.dbml) | [`05_erd_database.png`](file:///c:/Users/PC/Documents/HCMUT/doanchuyennganh/Elearning-AI/docs/diagrams/05_erd_database.png) |
+| **Figure 3.1** | **Overall UML Use Case Diagram** | [`01_use_case_diagram.drawio`](../diagrams/01_use_case_diagram.drawio) | [`01_use_case_diagram.png`](../diagrams/01_use_case_diagram.png) |
+| **Figure 4.1** | **Decoupled 3-Tier System Architecture** | [`02_system_architecture.drawio`](../diagrams/02_system_architecture.drawio) | [`02_system_architecture.png`](../diagrams/02_system_architecture.png) |
+| **Figure 4.2** | **UML Activity Diagram (Quiz & Telemetry)** | [`03_activity_diagram.drawio`](../diagrams/03_activity_diagram.drawio) | [`03_activity_diagram.png`](../diagrams/03_activity_diagram.png) |
+| **Figure 5.1** | **DKT Mathematical Inference Pipeline** | [`04_ai_pipeline_diagram.drawio`](../diagrams/04_ai_pipeline_diagram.drawio) | [`04_ai_pipeline_diagram.png`](../diagrams/04_ai_pipeline_diagram.png) |
+| **Figure 5.2** | **Relational Database Schema (ERD)** | [`schema.dbml`](../../backend/db/schema.dbml) | [`05_erd_database.png`](../diagrams/05_erd_database.png) |
 

@@ -1,96 +1,122 @@
-# THIẾT KẾ HỆ THỐNG E-LEARNING CÓ TÍCH HỢP AI (KNOWLEDGE TRACING)
+# Hệ thống E-Learning tích hợp AI (Knowledge Tracing)
 
-> **Mã đề tài:** HK261-DAGD1-480  
-> **Học phần:** Đồ án Chuyên ngành (ĐACN) ➡️ Đồ án Tốt nghiệp (ĐATN)  
-> **GVHD:** TS. Nguyễn Quốc Minh (Bộ môn Trí tuệ Nhân tạo - Khoa KH&KT Máy tính, ĐH Bách Khoa ĐHQG-HCM)  
-> **Sinh viên thực hiện:**
-> 1. Nguyễn Ngọc Sáng (2353046)
-> 2. Nguyễn Hữu Hào (2352296)
-> 3. Phạm Quang Tuấn (2353275)
+Nền tảng quản lý học tập (LMS) theo phong cách BKeL của ĐH Bách Khoa - ĐHQG-HCM, dùng chung cho nhiều môn học: học kỳ, lớp môn học, thời khóa biểu, buổi học, điểm danh bằng mã PIN, ngân hàng câu hỏi gắn nhãn kỹ năng. Thuật toán Knowledge Tracing (BKT, DKT) là phần mở rộng nhỏ, làm sau khi hệ thống ổn định.
 
----
+| | |
+|---|---|
+| Học phần | Specialized Project (CO4029), HK261 (2026-2027) |
+| Mã đề tài | HK261-DAGD1-480 |
+| GVHD | TS. Nguyễn Quốc Minh, Khoa KH&KT Máy tính |
+| Nhóm | Nguyễn Ngọc Sáng (2353046), Nguyễn Hữu Hào (2352296), Phạm Quang Tuấn (2353275) |
 
-## 1. Cấu trúc Thư mục Dự án 
+## 1. Chạy nhanh (Windows)
+
+Yêu cầu: **Docker Desktop** (chờ dòng "Engine running") và **Node.js LTS**.
+
+1. Nhấp đúp `scripts\start-dev.bat`. File này bật PostgreSQL và Adminer, tạo `.env`, cài thư viện, mở backend và frontend, rồi mở trình duyệt.
+2. Nhấp đúp `scripts\load-demo-data.bat` để nạp dữ liệu mẫu (chạy một lần vào database trống).
+3. Xem database: `http://localhost:8081/?pgsql=postgres&username=postgres&db=elearning`, mật khẩu `postgres`.
+
+| Cổng | Dịch vụ | Địa chỉ |
+|---|---|---|
+| 3000 | Frontend (Next.js) | http://localhost:3000 |
+| 8080 | Backend API | http://localhost:8080/health |
+| 8081 | Adminer (xem database) | đường dẫn ở bước 3 |
+| 5432 | PostgreSQL 15 | `postgres` / `postgres` / `elearning` |
+| 8000 | AI service (tùy chọn) | chỉ chạy khi bật profile `ai` |
+
+Các file khác trong `scripts\`: `stop-dev.bat` (tắt, giữ dữ liệu), `reset-db.bat` (xóa sạch dữ liệu, hỏi xác nhận).
+
+## 2. Chạy bằng lệnh (mọi hệ điều hành)
+
+```bash
+# Cơ sở dữ liệu + Adminer (tự áp dụng backend/db/schema.sql)
+docker compose up -d
+
+# Backend
+cd backend
+cp .env.example .env        # đặt JWT_SECRET là một chuỗi dài, ngẫu nhiên
+npm ci
+npm run dev                 # kiểm tra: npm run typecheck
+
+# Frontend (cửa sổ khác)
+cd frontend
+cp .env.example .env.local  # NEXT_PUBLIC_API_URL=http://localhost:8080
+npm ci
+npm run dev
+```
+
+Docker compose có ba nhóm dịch vụ:
+- Mặc định: `postgres`, `adminer`.
+- `--profile app`: backend và frontend dạng container (cần Dockerfile, nhiệm vụ S1-4).
+- `--profile ai`: dịch vụ AI (chưa có Dockerfile; hiện chạy bằng `python ai_service/api/main.py`).
+
+## 3. Tài khoản và dữ liệu mẫu
+
+Môn đang triển khai đầu tiên là CO2003 (Cấu trúc dữ liệu và Giải thuật). Cơ sở dữ liệu đã hỗ trợ nhiều môn và nhiều lớp; giao diện hiện mới hiển thị CO2003 và mỗi lớp đang giới hạn 15 buổi. Sau `load-demo-data.bat` có 1 giảng viên, 8 sinh viên, lớp CC01 của CO2003 với 15 buổi, 11 kỹ năng, 40 câu hỏi. Mật khẩu mọi tài khoản mẫu: `Demo@2026`.
+
+| Vai trò | Email |
+|---|---|
+| Giảng viên | a.nguyen@hcmut.edu.vn |
+| Sinh viên | b.nguyen@hcmut.edu.vn (và c.tran, d.le, e.pham, f.hoang, g.vu, h.do, k.ngo cùng đuôi @hcmut.edu.vn) |
+
+Đây là dữ liệu tạm. Script seed chính thức là nhiệm vụ S1-3. Giao diện web hiện vẫn dùng dữ liệu tĩnh; việc nối API là nhiệm vụ S1-1.
+
+## 4. Kiến trúc và cấu trúc thư mục
+
+Ba tầng: Frontend (Next.js 14) gọi Backend (Express, TypeScript) qua REST, Backend đọc ghi PostgreSQL. AI service (FastAPI) nối vào Backend ở giai đoạn sau.
 
 ```text
-Elearning-AI/
-├── docs/                                # Tài liệu phân tích và thiết kế hệ thống
-│   ├── use-cases/                       # Bảng đặc tả Use Cases & Sơ đồ tương tác
-│   │   ├── Use_Case_Specification_EN.docx
-│   │   └── USE_CASES_SUMMARY.md
-│   ├── database/                        # Thiết kế Cơ sở Dữ liệu quan hệ
-│   │   ├── erd_elearning.png            # Ảnh sơ đồ quan hệ thực thể (ERD)
-│   │   ├── schema.sql                   # Mã DDL PostgreSQL chuẩn hóa
-│   │   ├── schema.dbml                  # Mã nguồn DBML
-│   │   └── DATABASE_DICTIONARY.md       # Từ điển dữ liệu chi tiết các bảng
-│   └── architecture/                    # Kiến trúc tổng thể & luồng dữ liệu
-│       └── OVERALL_PIPELINE.md          # Sơ đồ Pipeline kết nối Web & AI
-│
-├── frontend/                            # Giao diện người dùng Web LMS (Next.js 14)
-│   ├── app/
-│   │   ├── page.jsx                     # Đăng nhập & Danh sách khóa học
-│   │   ├── lecture/page.jsx             # Giao diện xem bài giảng
-│   │   └── quiz/page.jsx                # Làm bài trắc nghiệm ghi nhận từng câu
-│   ├── package.json
-│   └── README.md
-│
-├── backend/                             # Dịch vụ Backend API (Node.js / Express)
-│   ├── src/
-│   │   └── server.js                    # API xác thực, khóa học và ghi nhận tương tác
-│   ├── db/
-│   │   └── schema.sql                   # Script khởi tạo CSDL
-│   ├── .env.example
-│   └── package.json
-│
-├── ai_service/                          # Dịch vụ AI & Theo dõi trạng thái kiến thức
-│   ├── datasets/                        # Dữ liệu benchmark 
-│   │   ├── sample_assistments.csv       # Mẫu dữ liệu ASSISTments 2009-2010
-│   │   └── inspect_dataset.py           # Script thống kê quy mô dữ liệu
-│   ├── models/                          # Thuật toán AI
-│   │   └── bkt_baseline.py              # Thuật toán Bayesian Knowledge Tracing cơ sở
-│   ├── api/
-│   │   └── main.py                      # FastAPI endpoint suy luận độ thành thạo kỹ năng
-│   └── requirements.txt
-│
-├── docker-compose.yml                   # Khởi chạy toàn bộ hệ thống bằng 1 lệnh
-├── .gitignore
-└── README.md
+.
+├── backend/          REST API
+│   ├── src/          server.ts, app.ts, config/, middleware/, routes/ (auth, academic, quizzes)
+│   └── db/           schema.sql (14 bảng, nguồn duy nhất), schema.dbml
+├── frontend/         Cổng BKeL (Next.js 14, React)
+├── ai_service/       Dịch vụ AI: baseline BKT, dữ liệu ASSISTments mẫu
+├── docs/             requirements/, architecture/, database/, diagrams/, data/ (dữ liệu môn học)
+├── report/           Mã nguồn LaTeX của báo cáo
+├── management/       ROADMAP.md, TASKS.md, MEETINGS.md
+├── scripts/          Các file .bat chạy nhanh trên Windows và dữ liệu mẫu
+├── docker-compose.yml
+└── CONTRIBUTING.md
 ```
 
----
+Mỗi loại tài liệu chỉ có một bản: CSDL ở `backend/db/`, sơ đồ ở `docs/diagrams/`.
 
-## 2. Hướng dẫn Chạy Thử nghiệm Từng Thành phần
+## 5. Tham khảo kỹ thuật
 
-### 2.1. Kiểm tra Dữ liệu & Chạy Thuật toán AI Baseline
-```bash
-# 1. Chạy thống kê dữ liệu benchmark ASSISTments:
-python ai_service/datasets/inspect_dataset.py
+- Xác thực: JWT (hạn một ngày), gửi qua header `Authorization: Bearer <token>`. Đăng ký tạo tài khoản sinh viên.
+- Điểm danh PIN: bốn chữ số ngẫu nhiên, hiệu lực 5 phút (giảng viên có thể chọn 1-15 phút qua `durationMinutes`); sinh viên nhập sai 5 lần trong 15 phút bị khóa (HTTP 429); mỗi sinh viên chỉ có một bản ghi điểm danh mỗi buổi.
+- Sĩ số lớp: trigger PostgreSQL với khóa `FOR UPDATE`; vượt sĩ số trả lỗi `Class capacity has been reached`.
+- Mã định danh phải là UUID hợp lệ (ký tự thứ 13 từ 1 đến 8, ký tự thứ 17 là 8, 9, a hoặc b). Khi viết seed, để PostgreSQL sinh bằng `gen_random_uuid()`.
+- Danh sách endpoint và quy tắc: `backend/README.md`. Từ điển dữ liệu: `docs/database/DATABASE_DICTIONARY.md`.
+- Biên dịch báo cáo: `cd report && pdflatex main.tex && pdflatex main.tex`.
 
-# 2. Chạy thuật toán mô hình cơ sở BKT:
-python ai_service/models/bkt_baseline.py
-```
+## 6. Quy trình làm việc
 
-### 2.2. Khởi động Web Frontend (Next.js)
-```bash
-cd frontend
-npm install
-npm run dev
-# Truy cập giao diện tại: http://localhost:3000
-```
+Chi tiết trong `CONTRIBUTING.md`. Tóm tắt:
 
-### 2.3. Khởi động Backend API (Node.js)
-```bash
-cd backend
-npm install
-npm start
-# API chạy tại: http://localhost:5000
-```
+1. Lấy việc từ `management/TASKS.md`, tạo nhánh `feat/<mã-việc>-<chủ-đề>` từ `main`.
+2. Làm nhỏ, commit rõ ràng (`feat`, `fix`, `docs`, `test`, `chore`), mở pull request, nhờ một người khác review.
+3. Cập nhật cột trạng thái trong `TASKS.md` ngay trong pull request.
+4. Báo tiến độ vào nhóm tối thứ Tư và thứ Sáu: đã xong, đang bị chặn, việc tiếp theo.
 
-### 2.4. Khởi chạy Toàn bộ Hệ thống bằng Docker Compose
-```bash
-docker compose up -d
-# PostgreSQL: port 5432
-# Backend API: port 5000
-# AI Service: port 8000
-# Web Frontend: port 3000
-```
+**Việc chỉ được coi là xong khi:** mã đã merge qua pull request; có test hoặc bản ghi test kèm bằng chứng; `docs/` hoặc `report/` đã cập nhật; không có bí mật, đường dẫn máy cá nhân hay emoji; typecheck (`npm run typecheck`) và build (`npm run build`) đạt.
+
+Quy ước mã: TypeScript với kiểu rõ ràng và bắt lỗi chặt chẽ; thay đổi CSDL chỉ làm trong `schema.sql` và phải chạy lại được nhiều lần; biểu tượng dùng SVG; không đưa `.env` hay dữ liệu database vào Git.
+
+## 7. Tiến độ
+
+Lộ trình, mốc họp GVHD và cổng chất lượng: `management/ROADMAP.md`. Phân công theo tuần: `management/TASKS.md`. Nhật ký họp: `management/MEETINGS.md`. Họp GVHD vào Chủ nhật, hai tuần một lần (kế tiếp 22/11/2026).
+
+## 8. Xử lý sự cố
+
+| Triệu chứng | Cách xử lý |
+|---|---|
+| Docker báo không kết nối được engine | Mở Docker Desktop, chờ "Engine running", chạy lại. |
+| Lỗi `port is already allocated` (5432) | Máy đang có PostgreSQL khác dùng cổng này: tắt dịch vụ đó hoặc đổi cổng trong `docker-compose.yml`. |
+| Adminer báo "Connection refused" | Ô System đang là MySQL: mở bằng đường dẫn ở mục 1, hoặc chọn PostgreSQL. |
+| Backend báo `Missing required environment variable: JWT_SECRET` | Chưa tạo `backend/.env` hoặc chưa đặt `JWT_SECRET`. |
+| `npm` bị chặn vì "running scripts is disabled" | `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`, hoặc dùng `npm.cmd`. |
+| Nạp dữ liệu mẫu báo trùng khóa | Dữ liệu đã nạp: chạy `scripts\reset-db.bat` rồi nạp lại. |
+| Cần database sạch | `docker compose down -v` rồi `docker compose up -d` (xóa toàn bộ dữ liệu). |

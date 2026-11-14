@@ -38,6 +38,8 @@ export default function Portal() {
   const attempts = useRef(0);
   const [pinOpen, setPinOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [quizSet, setQuizSet] = useState(null);
+  const openQuiz = (set = null) => { setQuizSet(set); setQuizOpen(true); };
   const [toasts, setToasts] = useState([]);
 
   /* ---- theme ---- */
@@ -122,7 +124,7 @@ export default function Portal() {
   const app = {
     user, view, setView, courseTab, setCourseTab, openCourse, theme, toggleTheme, logout,
     search, setSearch, courseFilter, setCourseFilter, roster, pin, generatePin, submitPin, setStatus,
-    setPinOpen, setQuizOpen, toast,
+    setPinOpen, setQuizOpen, quizSet, openQuiz, toast,
   };
 
   return (

@@ -1,0 +1,204 @@
+\section{Requirements Analysis}
+\label{ch:req}
+
+This section states what the system must do. Requirements were collected from three sources: the observation of how the BKeL portal is used by students and lecturers of HCMUT, the guidance of the supervisor at the biweekly meetings, and the structure of the pilot course CO2003. Functional requirements are expressed as use cases in the format proposed by Cockburn~\cite{cockburn2001writing}, which derives from the use-case-driven approach of Jacobson et al.~\cite{jacobson1992object}. Diagrams follow UML notation~\cite{fowler2004uml}.
+
+\subsection{Stakeholders and Actors}
+
+Table~\ref{tab:actors} lists the actors of the system.
+
+\begin{table}[H]
+\centering
+\caption{Actors of the system}
+\label{tab:actors}
+\begin{tblr}{colspec={Q[l,3cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
+Actor & Description\\
+Student & Logs in, sees the enrolled courses, the timetable and the materials of each session, checks in with the PIN, and takes practice quizzes.\\
+Lecturer (Instructor) & Manages the sessions of a class, opens and closes attendance, reviews attendance and enrollment statistics, and maintains the question bank.\\
+Administrator & Provisions lecturer and administrator accounts, manages semesters and course catalog.\\
+System (timer) & Closes an attendance window automatically when its expiry time has passed.\\
+\end{tblr}
+\end{table}
+
+\subsection{Functional Requirements}
+
+The functional requirements are grouped by module. The identifiers are used in the traceability tables of Section~\ref{ch:impl}.
+
+\begin{table}[H]
+\centering
+\caption{Functional requirements}
+\label{tab:fr}
+\begin{tblr}{colspec={Q[l,1.3cm]X[l]Q[l,2.2cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
+ID & Requirement & Use case\\
+FR1 & A user can register (as a student) and log in with e-mail and password; lecturers and administrators are provisioned by an administrator. & UC1\\
+FR2 & The system shows the user's courses for the active semester as cards. & UC1\\
+FR3 & A student can enroll in a class; the number of enrolled students must never exceed the maximum capacity of the class. & UC5, UC7\\
+FR4 & A lecturer can create the fifteen sessions of a class in one operation, or one session at a time, and can edit or delete a session. & UC5\\
+FR5 & The system validates sessions: unique number in $[1,15]$, end time after start time, and no conflict. & UC5\\
+FR6 & A student sees a weekly timetable with the sessions of the classes in which he or she is enrolled; the current session is highlighted. & UC5\\
+FR7 & Each session has an ordered list of materials of type slide, code or video. & UC1, UC5\\
+FR8 & A lecturer can open an attendance window; the system generates a random four-digit PIN and an expiry time of 5 minutes. & UC6\\
+FR9 & A student can check in with the PIN; the system records one record per student and session. & UC6\\
+FR10 & The system rejects check-in when the window is closed or expired, when the student is not enrolled, or after five failed attempts in fifteen minutes. & UC6\\
+FR11 & A lecturer can close attendance early and can mark attendance manually (present, absent, late, excused). & UC6\\
+FR12 & A lecturer can see enrollment against capacity, the participation rate per session, and the attendance rate per student. & UC7\\
+FR13 & A student can take a multiple-choice quiz of a session; each answer is stored as a separate interaction record. & UC2\\
+FR14 & A lecturer can create questions with four options and assign a skill label. & UC3\\
+FR15 & The user can switch between light and dark themes; the choice is remembered. & ---\\
+\end{tblr}
+\end{table}
+
+\subsection{Non-Functional Requirements}
+
+\begin{table}[H]
+\centering
+\caption{Non-functional requirements}
+\label{tab:nfr}
+\begin{tblr}{colspec={Q[l,1.3cm]Q[l,2.7cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
+ID & Quality & Requirement\\
+NFR1 & Security & Passwords are stored only as bcrypt hashes; API calls other than login and registration require a valid JWT; the answer key of a question is never sent to students; PIN check-in is rate limited.\\
+NFR2 & Integrity & Invariants (capacity, uniqueness of attendance, valid time ranges, valid PIN format) are enforced by the database and not only by the application.\\
+NFR3 & Concurrency & Concurrent enrollment of many students into the same class must not exceed the capacity.\\
+NFR4 & Usability & The interface follows the BKeL visual identity; all primary actions are reachable in at most three clicks; no emoji or raster icons are used.\\
+NFR5 & Accessibility & Text contrast is at least 4.5:1 in both themes~\cite{wcag21}; interactive elements are reachable by keyboard.\\
+NFR6 & Performance & Target: typical API calls (login, schedule, check-in) answer within 500\,ms for a class of 60 students. This target has not been measured yet (see Section~\ref{ch:plan}).\\
+NFR7 & Maintainability & Source code is typed (TypeScript), uses parameterized SQL, and the schema can be re-applied safely (idempotent migration script).\\
+NFR8 & Portability & The back end and database can run on any platform that supports Node.js and PostgreSQL~15.\\
+\end{tblr}
+\end{table}
+
+\subsection{Use Case Model}
+
+\subsubsection{Use Case Diagram}
+
+Figure~\ref{fig:usecase} shows the use case diagram. UC4 (competency view) belongs to the second phase and is drawn dashed. The ``System'' timer actor of Table~\ref{tab:actors} is omitted from the diagram for clarity.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    uc/.style={ellipse, draw, fill=cyan!8, text width=5.9cm, minimum height=1.05cm, align=center, font=\footnotesize, inner sep=1pt},
+    ucp/.style={ellipse, draw, dashed, fill=gray!8, text width=5.9cm, minimum height=1.05cm, align=center, font=\footnotesize, text=gray, inner sep=1pt},
+    act/.style={rectangle, draw, rounded corners, fill=teal!10, minimum width=2.2cm, minimum height=0.8cm, font=\small\bfseries, align=center},
+    >=stealth]
+\draw[thick] (-4.3,-9.2) rectangle (4.3,1.6);
+\node[font=\small\bfseries] at (0,1.2) {E-Learning System};
+\node[uc]  (u1) at (0, 0.2) {UC1 Log in and view lecture content};
+\node[uc]  (u2) at (0,-1.3) {UC2 Take multiple-choice quiz};
+\node[ucp] (u4) at (0,-2.8) {UC4 View competency chart (phase 2)};
+\node[uc]  (u5) at (0,-4.3) {UC5 Manage sessions and timetable};
+\node[uc]  (u6) at (0,-5.8) {UC6 Take attendance with PIN};
+\node[uc]  (u7) at (0,-7.3) {UC7 View enrollment and attendance statistics};
+\node[uc]  (u3) at (0,-8.6) {UC3 Create question with skill label};
+\node[act] (st) at (-7.0,-3.0) {Student};
+\node[act] (lec) at (7.0,-6.0) {Lecturer};
+\foreach \u in {u1,u2,u5,u6} \draw (st.east) -- (\u.west);
+\draw[dashed,gray] (st.east) -- (u4.west);
+\foreach \u in {u3,u5,u6,u7} \draw (lec.west) -- (\u.east);
+\end{tikzpicture}
+\caption{Use case diagram of the e-learning system }
+\label{fig:usecase}
+\end{figure}
+
+\subsubsection{Use Case Summary}
+
+Table~\ref{tab:uc-summary} gives the complete list of use cases. The detailed specifications of UC5--UC7 are in Section~\ref{sec:uc-session}.
+
+\begin{table}[H]
+\centering
+\caption{Use case summary}
+\label{tab:uc-summary}
+\begin{tblr}{colspec={Q[l,1.1cm]Q[l,3.6cm]Q[l,2.4cm]X[l]Q[l,1.8cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
+ID & Name & Primary actor & Goal & Phase\\
+UC1 & Log in and view lecture content & Student & Authenticate and open the content of a session & 1\\
+UC2 & Take a multiple-choice quiz & Student & Answer questions one by one and receive immediate feedback & 1\\
+UC3 & Create a question and assign a skill label & Lecturer & Add a question to the bank with a skill label & 1\\
+UC4 & View competency chart & Student & See the level per skill computed from quiz history & 2\\
+UC5 & Manage sessions and timetable & Lecturer (Student views) & Create and maintain the 15 sessions; view the weekly timetable & 1\\
+UC6 & Take attendance with a PIN & Lecturer, Student & Open a time-limited window; students check in with a PIN & 1\\
+UC7 & View enrollment and attendance statistics & Lecturer & See capacity, participation per session and rate per student & 1\\
+\end{tblr}
+\end{table}
+
+\subsection{Detailed Use Case Specifications}
+
+\subsubsection{Specifications of UC5--UC7}
+\label{sec:uc-session}
+
+UC1--UC3 are described by their main flow in Table~\ref{tab:uc-summary}; the three use cases below were added after the third meeting to cover the operation of a real class, so they are specified in full.
+
+\begin{table}[H]
+\centering
+\caption{Specification of UC5 --- Manage sessions and timetable}
+\label{tab:uc5}
+\begin{tblr}{colspec={Q[l,3cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\small}}
+Field & Content\\
+Primary actor & Lecturer; secondary actors: Student (views the timetable), System\\
+Description & The lecturer creates and manages the fifteen sessions of a class in the current semester (title, date, period, room). Students view the weekly timetable.\\
+Trigger & The lecturer selects ``Manage sessions'' for a class, or a student opens the timetable page.\\
+Pre-conditions & The user is logged in; the class (e.g.\ CO2003--CC01) exists in the active semester (e.g.\ HK261); the lecturer is in charge of the class.\\
+Main flow & (1) The lecturer selects the class. (2) The system lists sessions 1--15 and a ``Create sessions'' action. (3) The lecturer chooses ``Create 15 sessions'' or adds one session. (4) The lecturer enters number, title, date, start time, end time, room (default: the default room of the class). (5) The system validates the data. (6) The system saves and confirms. (7) The system displays the weekly grid and highlights today's session. (8) A student opens the timetable, selects a week and sees the sessions of the classes he or she is enrolled in; a click shows the details and materials.\\
+Alternative flows & A1 Edit a session (re-validate and save). A2 Delete a session after confirmation; related attendance and quiz data are removed by \texttt{ON DELETE CASCADE}. A3 Switch the week or switch between grid and list view.\\
+Exception flows & E1 Room or time conflict: error, choose again. E2 Invalid data (missing field, date outside the semester, end not after start). E3 No permission (not the lecturer of the class). E4 System error: data are kept in the form for retry.\\
+Business rules & BR1 Each class has exactly 15 sessions numbered 1--15, unique. BR2 Each session owns its materials, attendance and quiz.\\
+Post-conditions & All sessions are stored in \code{course_sessions}; the timetable shows them correctly.\\
+\end{tblr}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Specification of UC6 --- Take attendance with a PIN}
+\label{tab:uc6}
+\begin{tblr}{colspec={Q[l,3cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\small}}
+Field & Content\\
+Primary actors & Lecturer (opens the window), Student (checks in); secondary actor: System\\
+Description & The lecturer opens an attendance window for a session; the system generates a random four-digit PIN valid for 5 minutes. A student who enters the correct PIN while the window is open is recorded as present. When the time runs out, the window locks automatically.\\
+Trigger & The lecturer clicks ``Open attendance'' on the session page.\\
+Pre-conditions & Lecturer and students are logged in; the session belongs to the lecturer's class; the student's enrollment status is ``enrolled''.\\
+Main flow & (1) The lecturer clicks ``Open attendance''. (2) The system generates the PIN, sets \code{is_attendance_open = true} and computes \code{attendance_expires_at}. (3) The system shows the PIN in large type (for a projector) with a countdown and the class list. (4) A student enters the PIN on a phone or laptop. (5) The system checks that the window is open and not expired, the PIN is correct, the student belongs to the class and has not already checked in. (6) The system records status \emph{present}, method \emph{pin}, and the check-in time. (7) The lecturer's list updates. (8) At expiry the system locks the window; students without a record are shown as absent.\\
+Alternative flows & A1 Manual attendance by the lecturer (present, absent, late, excused) with an optional note. A2 Close early. A3 Regenerate the PIN if it leaked; the expiry is reset.\\
+Exception flows & E1 Wrong PIN: error; consecutive failures are limited. E2 Window closed or expired: nothing is recorded. E3 Already checked in: no duplicate. E4 Student not in class: rejected. E5 Connection lost: the student can retry while the window is valid.\\
+Business rules & BR1 PIN = 4 random digits, valid 5 minutes by default. BR2 One attendance record per student per session. BR3 Only the lecturer of the class can open, close and edit attendance.\\
+Post-conditions & Every successful check-in has a record with status \emph{present}, method \emph{pin} and a time; the window is locked after expiry or closing.\\
+\end{tblr}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Specification of UC7 --- View enrollment and attendance statistics}
+\label{tab:uc7}
+\begin{tblr}{colspec={Q[l,3cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\small}}
+Field & Content\\
+Primary actor & Lecturer; secondary actor: System\\
+Description & The lecturer views, for a class: enrolled students against capacity, the average attendance rate, the participation rate of each of the fifteen sessions and the attendance rate of each student.\\
+Trigger & The lecturer selects ``Class statistics''.\\
+Pre-conditions & The lecturer is logged in and in charge of the class; the class has enrollments; at least one session has taken place (otherwise only enrollment is shown).\\
+Main flow & (1) The lecturer opens ``Class statistics''. (2) The system shows enrolled/capacity (e.g.\ 45/60) and the number of dropped students. (3) The system shows the average attendance rate. (4) The system draws a bar chart of participation for sessions 1--15. (5) The system shows a per-student table: present, absent, late, excused, percentage. (6) The lecturer clicks a bar to see the details of the session.\\
+Alternative flows & A1 Filter by semester, class or range of sessions. A2 Sort by rate; highlight students under the threshold (e.g.\ 80\%). A3 Export the table to a file (if supported).\\
+Exception flows & E1 No attendance yet: show enrollment and the message ``No session has been recorded yet''. E2 No student in the class. E3 No permission. E4 System error with reload.\\
+Business rules & BR1 Attendance rate = (present + late) / sessions held $\times$ 100\%; excused sessions are removed from the denominator. BR2 Only students with status \emph{enrolled} are counted.\\
+Post-conditions & The system does not change any data.\\
+\end{tblr}
+\end{table}
+
+\subsection{Business Rules}
+
+Table~\ref{tab:br} collects the business rules that cut across use cases and states where each one is enforced.
+
+\begin{table}[H]
+\centering
+\caption{Cross-cutting business rules and enforcement points}
+\label{tab:br}
+\begin{tblr}{colspec={Q[l,1.2cm]X[l]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
+ID & Rule & Enforced by\\
+R1 & At most one semester is active at a time. & Partial unique index on \code{semesters(is_active)}\\
+R2 & A class code is unique within a semester. & \code{UNIQUE (semester_id, class_code)}\\
+R3 & A student has at most one enrollment row per class; a dropped student can re-enroll. & \code{UNIQUE (class_id, user_id)} and status column\\
+R4 & Enrollment never exceeds the capacity. & Trigger with \texttt{FOR UPDATE}\\
+R5 & Session numbers are 1--15 and unique within a class. & \code{CHECK} and \code{UNIQUE (class_id, session_number)}\\
+R6 & A session ends after it starts. & \code{CHECK (end_time > start_time)}\\
+R7 & A PIN has exactly four digits; the window is open if and only if a PIN and an expiry exist. & Two \code{CHECK} constraints\\
+R8 & One attendance record per student per session; present and late records have a time and a method. & \code{UNIQUE (session_id, user_id)} and \code{CHECK}\\
+R9 & Five failed PIN attempts in 15 minutes block the student for that session. & Table \code{attendance_pin_attempts} and application logic\\
+R10 & A question has one skill, and an interaction cannot carry a different skill from its question. & Composite foreign key \code{(question_id, skill_id)}\\
+\end{tblr}
+\end{table}

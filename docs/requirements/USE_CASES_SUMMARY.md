@@ -1,9 +1,9 @@
 # USE CASE SPECIFICATION (E-LEARNING SYSTEM WITH AI INTEGRATION)
 
-> **Course:** Capstone Project / Graduation Project (ĐACN - ĐATN HK261)  
+> **Course:** Specialized Project (CO4029), semester HK261  
 > **Topic:** Design of an E-Learning System with AI Integration (HK261-DAGD1-480)  
 > **Supervisor:** Dr. Nguyen Quoc Minh  
-> **Student Authors:** Nguyen Ngoc Sang (Leader), Nguyen Huu Hao, Pham Quang Tuan  
+> **Student Authors:** Nguyen Ngoc Sang, Nguyen Huu Hao, Pham Quang Tuan  
 
 ---
 
