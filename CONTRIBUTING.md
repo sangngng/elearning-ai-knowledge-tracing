@@ -10,7 +10,7 @@ Ba thành viên, một kho mã, phản hồi nhanh.
 | `backend/`, `docker-compose.yml` | Hào | Sang |
 | `docs/requirements/`, `docs/data/`, `docs/diagrams/` | Tuấn | Sang |
 | `report/` | Sang (gộp đóng góp) | Tuấn |
-| `management/` | Sang (leader) | --- |
+| `management/` | Sang | --- |
 
 ## Nhánh và commit
 

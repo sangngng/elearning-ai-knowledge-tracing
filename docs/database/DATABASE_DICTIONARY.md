@@ -64,7 +64,7 @@ Attendance fields:
 - `is_attendance_open`: must agree with whether code and expiry are set.
 - `attendance_expires_at`: timestamp after which check-in is rejected.
 
-PINs use a cryptographic random-number generator. The opening API accepts a 10–15 minute duration (default 10), returns the code to the assigned instructor/admin only, and clears it on close/expiry. The server sweeps expired sessions every 15 seconds, and check-in also checks expiry directly.
+PINs use a cryptographic random-number generator. The opening API makes the PIN valid for 5 minutes by default (instructor may choose 1–15), returns the code to the assigned instructor/admin only, and clears it on close/expiry. The server sweeps expired sessions every 15 seconds, and check-in also checks expiry directly.
 
 ### `session_materials`
 

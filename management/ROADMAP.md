@@ -1,6 +1,6 @@
 # Lộ trình dự án - E-Learning System (HK261-DAGD1-480)
 
-Leader điều phối: lập lịch, giao việc, kiểm tra tiến độ và chất lượng. Họp GVHD vào Chủ nhật, hai tuần một lần. Cập nhật lần cuối: 14/11/2026.
+Họp GVHD vào Chủ nhật, hai tuần một lần. Cập nhật lần cuối: 14/11/2026.
 
 ## 1. Nguyên tắc phạm vi
 
@@ -14,7 +14,7 @@ Leader điều phối: lập lịch, giao việc, kiểm tra tiến độ và ch
 |---|---|---|
 | Báo cáo | 40 trang, 7 mục, 44 tài liệu tham khảo | Mốc 30/11 cần 50 trang, 15/12 cần 70 trang |
 | CSDL | 14 bảng, schema áp dụng sạch và chạy lại được (đã kiểm tra trên PostgreSQL) | Chưa có script seed |
-| Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN, quiz đã có | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
+| Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN (5 phút), quiz đã có; đã sửa lỗi check-in PIN trả 500 | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
 | Frontend | Build đạt; giao diện BKeL đầy đủ | Toàn bộ dữ liệu là tĩnh, chưa gọi API nào |
 | Docker | Compose chạy được PostgreSQL | Chưa có Dockerfile cho backend và frontend |
 | Dữ liệu CO2003 | 15 buổi, 40 câu, 11 kỹ năng | Phân bố không đều: DSA-COMPLEXITY và DSA-RECURSION chỉ có 1 câu |
@@ -70,7 +70,7 @@ Quyết định: tích hợp AI chỉ bắt đầu khi hệ thống đủ UC1-UC
 2. Có test hoặc bản ghi test thủ công kèm bằng chứng (log, ảnh chụp).
 3. Cập nhật `docs/` hoặc `report/` nếu hành vi thay đổi.
 4. Không có bí mật, đường dẫn tuyệt đối máy cá nhân hay emoji trong mã và tài liệu.
-5. Người làm báo cáo kết quả cho leader kèm bằng chứng.
+5. Người làm báo cáo kết quả vào nhóm kèm bằng chứng.
 
 ## 8. Rủi ro
 
@@ -82,6 +82,7 @@ Quyết định: tích hợp AI chỉ bắt đầu khi hệ thống đủ UC1-UC
 | Tài liệu tham khảo viết từ trí nhớ | Sai thông tin trích dẫn | S1-10: đối chiếu từng mục | Tuấn |
 | Báo cáo 50 và 70 trang | Trượt mốc | Nội dung viết trước hạn theo bảng việc; có danh sách mục dự phòng để thêm | Sang |
 | AI lấn thời gian của hệ thống | Hệ thống thiếu hoàn thiện khi bảo vệ | Giới hạn ngân sách làn AI; chỉ tích hợp sau G3 | Sang |
+| Hệ thống gắn cứng một môn (15 buổi, dữ liệu CO2003) | Không mở rộng được sang môn khác | S2-11, S2-12, S2-13 | Hào, Sang, Tuấn |
 | Ba người cùng sửa một kho | Xung đột merge | Nhánh ngắn, pull request, mỗi thư mục một chủ (xem CONTRIBUTING.md) | Cả nhóm |
 
 ## 9. Nếu bị trễ (thứ tự cắt giảm)

@@ -135,7 +135,8 @@ const L = ['A', 'B', 'C', 'D'];
 
 export function QuizModal({ app }) {
   const { setQuizOpen, toast } = app;
-  const Q = SESSION_QUIZ_QUESTIONS;
+  const set = app.quizSet;
+  const Q = set ? set.questions : SESSION_QUIZ_QUESTIONS;
   const [i, setI] = useState(0);
   const [sel, setSel] = useState(null);
   const [checked, setChecked] = useState(false);
@@ -163,7 +164,7 @@ export function QuizModal({ app }) {
 
   return (
     <Frame
-      wide onClose={() => setQuizOpen(false)} title="Quiz tương tác • Buổi 3"
+      wide onClose={() => setQuizOpen(false)} title={set ? set.title : 'Quiz tương tác • Buổi 3'}
       subtitle={finished ? 'Kết quả bài làm' : `Câu ${i + 1}/${Q.length} • Kỹ năng ${q.skillCode}`}
       footer={
         finished ? (
@@ -196,11 +197,11 @@ export function QuizModal({ app }) {
             <Icon name={pct >= 70 ? 'check-circle' : 'target'} size={34} />
           </div>
           <div className="score">{score}/{Q.length}</div>
-          <p className="muted">{pct >= 70 ? 'Rất tốt! Bạn nắm vững phần Danh sách liên kết đơn.' : 'Bạn nên xem lại phần Danh sách liên kết đơn và làm bài rèn luyện.'}</p>
-          <div className="callout info" style={{ textAlign: 'left', width: '100%' }}>
+          <p className="muted">{set ? (pct >= 70 ? 'Rất tốt! Bạn nắm vững phần kiến thức này.' : 'Bạn nên xem lại nội dung các buổi học liên quan và làm lại bài.') : (pct >= 70 ? 'Rất tốt! Bạn nắm vững phần Danh sách liên kết đơn.' : 'Bạn nên xem lại phần Danh sách liên kết đơn và làm bài rèn luyện.')}</p>
+          {!set && (<div className="callout info" style={{ textAlign: 'left', width: '100%' }}>
             <Icon name="brain" size={18} />
             <span>Kết quả đã được gửi đến mô hình Knowledge Tracing để cập nhật xác suất thành thạo kỹ năng <b className="mono">DSA-LINKEDLIST</b>.</span>
-          </div>
+          </div>)}
         </div>
       ) : (
         <div className="question" key={q.id}>

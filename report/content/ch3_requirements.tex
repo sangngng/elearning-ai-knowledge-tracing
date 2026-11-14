@@ -37,7 +37,7 @@ FR4 & A lecturer can create the fifteen sessions of a class in one operation, or
 FR5 & The system validates sessions: unique number in $[1,15]$, end time after start time, and no conflict. & UC5\\
 FR6 & A student sees a weekly timetable with the sessions of the classes in which he or she is enrolled; the current session is highlighted. & UC5\\
 FR7 & Each session has an ordered list of materials of type slide, code or video. & UC1, UC5\\
-FR8 & A lecturer can open an attendance window; the system generates a random four-digit PIN and an expiry time of 10--15 minutes. & UC6\\
+FR8 & A lecturer can open an attendance window; the system generates a random four-digit PIN and an expiry time of 5 minutes. & UC6\\
 FR9 & A student can check in with the PIN; the system records one record per student and session. & UC6\\
 FR10 & The system rejects check-in when the window is closed or expired, when the student is not enrolled, or after five failed attempts in fifteen minutes. & UC6\\
 FR11 & A lecturer can close attendance early and can mark attendance manually (present, absent, late, excused). & UC6\\
@@ -151,13 +151,13 @@ Post-conditions & All sessions are stored in \code{course_sessions}; the timetab
 \begin{tblr}{colspec={Q[l,3cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\small}}
 Field & Content\\
 Primary actors & Lecturer (opens the window), Student (checks in); secondary actor: System\\
-Description & The lecturer opens an attendance window for a session; the system generates a random four-digit PIN valid for 10--15 minutes. A student who enters the correct PIN while the window is open is recorded as present. When the time runs out, the window locks automatically.\\
+Description & The lecturer opens an attendance window for a session; the system generates a random four-digit PIN valid for 5 minutes. A student who enters the correct PIN while the window is open is recorded as present. When the time runs out, the window locks automatically.\\
 Trigger & The lecturer clicks ``Open attendance'' on the session page.\\
 Pre-conditions & Lecturer and students are logged in; the session belongs to the lecturer's class; the student's enrollment status is ``enrolled''.\\
 Main flow & (1) The lecturer clicks ``Open attendance''. (2) The system generates the PIN, sets \code{is_attendance_open = true} and computes \code{attendance_expires_at}. (3) The system shows the PIN in large type (for a projector) with a countdown and the class list. (4) A student enters the PIN on a phone or laptop. (5) The system checks that the window is open and not expired, the PIN is correct, the student belongs to the class and has not already checked in. (6) The system records status \emph{present}, method \emph{pin}, and the check-in time. (7) The lecturer's list updates. (8) At expiry the system locks the window; students without a record are shown as absent.\\
 Alternative flows & A1 Manual attendance by the lecturer (present, absent, late, excused) with an optional note. A2 Close early. A3 Regenerate the PIN if it leaked; the expiry is reset.\\
 Exception flows & E1 Wrong PIN: error; consecutive failures are limited. E2 Window closed or expired: nothing is recorded. E3 Already checked in: no duplicate. E4 Student not in class: rejected. E5 Connection lost: the student can retry while the window is valid.\\
-Business rules & BR1 PIN = 4 random digits, valid 10--15 minutes. BR2 One attendance record per student per session. BR3 Only the lecturer of the class can open, close and edit attendance.\\
+Business rules & BR1 PIN = 4 random digits, valid 5 minutes by default. BR2 One attendance record per student per session. BR3 Only the lecturer of the class can open, close and edit attendance.\\
 Post-conditions & Every successful check-in has a record with status \emph{present}, method \emph{pin} and a time; the window is locked after expiry or closing.\\
 \end{tblr}
 \end{table}

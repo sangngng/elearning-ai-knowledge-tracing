@@ -44,7 +44,7 @@ Attendance can be recorded in several ways: a paper roll call, a tick on a list,
     \item \textbf{A short-lived PIN} shown on the lecturer's screen requires physical presence in the room (or at least a live view of the screen), costs a few seconds, and needs no additional hardware.
 \end{itemize}
 
-We chose the PIN approach. A four-digit PIN has only 10\,000 possible values, so on its own it is weak against a brute-force attack from a logged-in student. The system therefore combines it with three controls: a short validity period of ten to fifteen minutes, a limit of five failed attempts per student and session in a fifteen-minute window (HTTP status 429, defined in~\cite{rfc6585}), and the requirement that the student is enrolled in the class. The effect of these controls is analyzed in Section~\ref{sec:pin-security}. The importance given to attendance is justified by the evidence that attendance is associated with grades~\cite{crede2010class, kassarnig2018academic}.
+We chose the PIN approach. A four-digit PIN has only 10\,000 possible values, so on its own it is weak against a brute-force attack from a logged-in student. The system therefore combines it with three controls: a short validity period of five minutes, a limit of five failed attempts per student and session in a fifteen-minute window (HTTP status 429, defined in~\cite{rfc6585}), and the requirement that the student is enrolled in the class. The effect of these controls is analyzed in Section~\ref{sec:pin-security}. The importance given to attendance is justified by the evidence that attendance is associated with grades~\cite{crede2010class, kassarnig2018academic}.
 
 \subsection{Software Architecture Principles}
 

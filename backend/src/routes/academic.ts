@@ -7,6 +7,11 @@ export const academicRouter = Router()
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/
+// Attendance PIN lifetime. Default 5 minutes; an instructor may choose 1 to 15.
+const PIN_DEFAULT_MINUTES = 5
+const PIN_MIN_MINUTES = 1
+const PIN_MAX_MINUTES = 15
+
 const routeParam = (value: string | string[]) => Array.isArray(value) ? value[0] ?? '' : value
 
 type SessionInput = {
@@ -185,9 +190,9 @@ academicRouter.post('/api/classes/:classId/sessions/bulk', requireRoles('instruc
 academicRouter.post('/api/sessions/:sessionId/attendance/open', requireRoles('instructor', 'admin'), async (req: AuthRequest, res, next) => {
   try {
     const sessionId = routeParam(req.params.sessionId)
-    const durationMinutes = req.body?.durationMinutes ?? 10
-    if (!uuidPattern.test(sessionId) || !Number.isInteger(durationMinutes) || durationMinutes < 10 || durationMinutes > 15) {
-      return res.status(400).json({ error: 'sessionId must be a UUID and durationMinutes must be between 10 and 15' })
+    const durationMinutes = req.body?.durationMinutes ?? PIN_DEFAULT_MINUTES
+    if (!uuidPattern.test(sessionId) || !Number.isInteger(durationMinutes) || durationMinutes < PIN_MIN_MINUTES || durationMinutes > PIN_MAX_MINUTES) {
+      return res.status(400).json({ error: `sessionId must be a UUID and durationMinutes must be between ${PIN_MIN_MINUTES} and ${PIN_MAX_MINUTES}` })
     }
     const code = randomInt(0, 10_000).toString().padStart(4, '0')
     const result = await pool.query(

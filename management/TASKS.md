@@ -1,7 +1,7 @@
 # Bảng công việc
 
-Phân công: **Sang** (leader, frontend, tích hợp, báo cáo), **Hào** (backend, CSDL, Docker), **Tuấn** (yêu cầu, dữ liệu, tài liệu, nội dung báo cáo).
-Trạng thái: `todo`, `doing`, `review`, `done`. Leader kiểm tra bảng vào thứ Tư và thứ Sáu. Mỗi nhiệm vụ làm trên nhánh riêng (xem `CONTRIBUTING.md`).
+Phân công: **Sang** (frontend, tích hợp, báo cáo, theo dõi tiến độ), **Hào** (backend, CSDL, Docker), **Tuấn** (yêu cầu, dữ liệu, tài liệu, nội dung báo cáo).
+Trạng thái: `todo`, `doing`, `review`, `done`. Bảng được rà vào vào thứ Tư và thứ Sáu. Mỗi nhiệm vụ làm trên nhánh riêng (xem `CONTRIBUTING.md`).
 
 ## Sprint 1: 16/11 - 22/11 (mục tiêu: hệ thống thật, đã tích hợp)
 
@@ -28,7 +28,7 @@ Trạng thái: `todo`, `doing`, `review`, `done`. Leader kiểm tra bảng vào 
 | S1-10 | Đối chiếu 44 tài liệu tham khảo, thêm ngày truy cập cho nguồn online | 20/11 | Danh sách đã sửa (BibTeX hoặc văn bản) | Từng mục đúng tác giả, năm, nhan đề, đường dẫn mở được | todo |
 | S1-11 | Viết mục so sánh BKeL/Moodle và mục rủi ro cho báo cáo | 21/11 | 4-5 trang | Có nguồn trích dẫn; khớp với phạm vi hệ thống | todo |
 
-### Sang (Leader, frontend, báo cáo)
+### Sang (Frontend, báo cáo)
 
 | ID | Nhiệm vụ | Hạn | Kết quả nộp | Trạng thái |
 |---|---|---|---|---|
@@ -52,6 +52,9 @@ Phụ thuộc: S1-1 cần S1-3 và S1-14; S1-6 cần S1-3; S1-17 cần S1-8, S1-
 | S2-6 | Báo cáo đạt 50 trang (mốc 30/11) | Cả nhóm | 30/11 |
 | S2-7 | Test end-to-end toàn bộ use case và danh sách lỗi | Tuấn | 04/12 |
 | S2-8 | Sửa lỗi, kiểm tra hiệu năng truy vấn lịch và tổng hợp điểm danh | Hào, Sang | 05/12 |
+| S2-11 | Hỗ trợ nhiều môn ở CSDL và API: bỏ giới hạn cứng 15 buổi (`session_number` từ 1, số buổi theo từng lớp), `sessions/bulk` nhận số buổi bất kỳ, thêm `GET /api/courses`; có test | Hào | 29/11 |
+| S2-12 | Giao diện nhiều môn: danh sách khóa học và trang môn học lấy từ API, bỏ dữ liệu gắn cứng CO2003 | Sang | 04/12 |
+| S2-13 | Bộ dữ liệu môn thứ hai (ít buổi hơn, khoảng 10 câu hỏi gắn kỹ năng) để kiểm chứng nhiều môn | Tuấn | 01/12 |
 | S2-9 | Làn AI giai đoạn A: ghi chú BKT/DKT, hợp đồng dữ liệu và API, chạy baseline BKT | Sang | 06/12 |
 | S2-10 | Hào hỗ trợ: endpoint hoặc script xuất `quiz_interactions` ra CSV đúng hợp đồng dữ liệu | Hào | 06/12 |
 

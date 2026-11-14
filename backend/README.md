@@ -32,7 +32,7 @@ src/
 - `POST /api/classes/:classId/enroll` — student enrollment; the database capacity trigger serializes concurrent joins.
 - `POST /api/classes/:classId/sessions` — instructor creates one session (`sessionNumber` 1–15).
 - `POST /api/classes/:classId/sessions/bulk` — instructor creates exactly sessions 1 through 15 transactionally.
-- `POST /api/sessions/:sessionId/attendance/open` — instructor opens PIN check-in for 10–15 minutes; defaults to 10. Returns the four-digit PIN and expiry.
+- `POST /api/sessions/:sessionId/attendance/open` — instructor opens PIN check-in; valid 5 minutes by default (`durationMinutes` 1–15). Returns the four-digit PIN and expiry.
 - `POST /api/sessions/:sessionId/attendance/close` — instructor closes check-in and clears the PIN.
 - `POST /api/sessions/:sessionId/attendance/check-in` — enrolled student body: `{ "attendanceCode": "4829" }`. PIN expires at the database expiry time and is rate-limited to five failed attempts per 15 minutes.
 - `GET /api/classes/:classId/attendance/summary` — instructor view of capacity, enrolled count, completed sessions, overall attendance rate, and per-student rates. Excused sessions are excluded from the denominator.

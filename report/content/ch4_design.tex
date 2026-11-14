@@ -293,7 +293,7 @@ GET & \code{/api/classes/:classId/sessions} & Sessions and materials of a class;
 POST & \code{/api/classes/:classId/enroll} & Student enrollment; the trigger serializes concurrent joins\\
 POST & \code{/api/classes/:classId/sessions} & Instructor creates one session\\
 POST & \code{/api/classes/:classId/sessions/bulk} & Instructor creates sessions 1--15 in one transaction\\
-POST & \code{/api/sessions/:id/attendance/open} & Open the window for 10--15 minutes (default 10); returns PIN and expiry\\
+POST & \code{/api/sessions/:id/attendance/open} & Open the window (5 minutes by default, 1--15 allowed); returns PIN and expiry\\
 POST & \code{/api/sessions/:id/attendance/close} & Close the window and clear the PIN\\
 POST & \code{/api/sessions/:id/attendance/check-in} & Enrolled student submits \texttt{\{attendanceCode\}}\\
 GET & \code{/api/classes/:classId/attendance/summary} & Capacity, enrolled, completed sessions, overall rate, rate per student\\
@@ -326,9 +326,10 @@ The assets are the integrity of attendance data, the confidentiality of the answ
 \label{tab:threats}
 \begin{tblr}{colspec={Q[l,3.6cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=1.5pt, rows={font=\small}}
 Threat & Countermeasure\\
-Proxy attendance & The PIN is shown only on the lecturer's screen and expires in 10--15 minutes; a sweep every 15 seconds and a check at check-in both enforce the expiry.\\
+Proxy attendance & The PIN is shown only on the lecturer's screen and expires after 5 minutes; a sweep every 15 seconds and a check at check-in both enforce the expiry.\\
 PIN guessing & Five failed attempts per student and session in 15 minutes lead to HTTP 429; only enrolled students can try; every attempt is logged in \code{attendance_pin_attempts}; a transaction-level advisory lock on (session, student) serializes parallel requests of the same student so that concurrent guesses cannot bypass the counter.\\
 Timing side channel & The submitted PIN is compared with \code{timingSafeEqual} from the Node.js \code{crypto} module, which takes the same time whatever the content.\\
+PIN storage & The PIN is kept in plain form only while the window is open and is cleared on close or expiry. Hashing it would add little, because the 10\,000 possible values can be hashed in a fraction of a second; the protection comes from the short lifetime, the attempt limit and the role checks that keep the column away from students.\\
 Weak PIN generation & PINs come from \code{randomInt} of \code{node:crypto}, a cryptographically secure generator, not from \code{Math.random}.\\
 Privilege escalation & The JWT carries the role; each route checks it; opening and closing attendance and reading the PIN require the instructor of that class or an administrator.\\
 Answer-key leakage & The quiz endpoint selects columns explicitly and never returns \code{correct_answer}.\\

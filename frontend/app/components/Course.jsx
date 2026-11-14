@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { Avatar, CountUp, Donut, Progress, RadarChart, Ring } from './ui';
 import { COURSE_INFO, SESSIONS_LIST, SKILL_MASTERY_SAMPLE } from '../data/dsaCourseData';
+import { CO2003_QUESTION_BANK } from '../data/co2003QuestionBank';
 
 const TABS = [
   { id: 'sessions', label: 'Buổi học', icon: 'book' },
@@ -11,6 +12,7 @@ const TABS = [
   { id: 'timetable', label: 'Thời khóa biểu', icon: 'calendar' },
   { id: 'participants', label: 'Thành viên', icon: 'users' },
   { id: 'analytics', label: 'Thống kê', icon: 'chart' },
+  { id: 'quiz', label: 'Bài kiểm tra', icon: 'zap' },
   { id: 'radar', label: 'Bản đồ năng lực AI', icon: 'brain' },
 ];
 
@@ -93,6 +95,7 @@ export default function Course({ app }) {
         {courseTab === 'timetable' && <TimetableTab />}
         {courseTab === 'participants' && <ParticipantsTab app={app} />}
         {courseTab === 'analytics' && <AnalyticsTab app={app} />}
+        {courseTab === 'quiz' && <QuizTab app={app} />}
         {courseTab === 'radar' && <RadarTab app={app} />}
       </div>
     </div>
@@ -532,7 +535,7 @@ function RadarTab({ app }) {
             <div className="ic tone-warn"><Icon name="target" size={16} /></div>
             <p><b>Cần ôn tập:</b> {weak.length ? weak.map((s) => `${s.skill} (${s.mastery}%)`).join(', ') : 'Chưa phát hiện lỗ hổng đáng kể.'}. Nên làm lại bài rèn luyện trước Buổi 7.</p>
           </div>
-          <button className="btn btn-ai btn-block" style={{ marginTop: 14 }} onClick={() => setQuizOpen(true)}>
+          <button className="btn btn-ai btn-block" style={{ marginTop: 14 }} onClick={() => app.openQuiz()}>
             <Icon name="zap" size={17} /> Làm bài rèn luyện tăng cường
           </button>
         </div>
@@ -549,6 +552,43 @@ function RadarTab({ app }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+/* ================================================================== QUIZ BANK */
+function QuizTab({ app }) {
+  const bank = CO2003_QUESTION_BANK;
+  const skills = new Set(bank.map((q) => q.skillCode)).size;
+  const groups = Array.from(new Set(bank.map((q) => q.sessionNumber))).sort((a, b) => a - b).map((n) => ({
+    n,
+    questions: bank.filter((q) => q.sessionNumber === n),
+    title: (SESSIONS_LIST.find((s) => (s.number ?? s.sessionNumber ?? s.id) === n) || {}).title?.replace(/^Buổi \d+:\s*/, '') || `Buổi ${n}`,
+  }));
+  return (
+    <div className="card card-pad">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
+        <div>
+          <h3>Ngân hàng câu hỏi {COURSE_INFO.code}</h3>
+          <p className="card-sub">{bank.length} câu trắc nghiệm • {skills} kỹ năng • mỗi câu có đáp án và giải thích</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => app.openQuiz({ title: `Bài kiểm tra tổng hợp • ${bank.length} câu`, questions: bank })}>
+          <Icon name="zap" size={17} /> Làm toàn bộ {bank.length} câu
+        </button>
+      </div>
+      <div style={{ display: 'grid', gap: 10 }}>
+        {groups.map((g) => (
+          <div key={g.n} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', border: '1px solid var(--line)', borderRadius: 14 }}>
+            <span className="badge badge-brand">Buổi {g.n}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <b style={{ fontSize: 14.5 }}>{g.title}</b>
+              <div className="muted" style={{ fontSize: 12.5 }}>{g.questions.length} câu</div>
+            </div>
+            <button className="btn" onClick={() => app.openQuiz({ title: `Quiz Buổi ${g.n}`, questions: g.questions })}>Làm bài</button>
+          </div>
+        ))}
       </div>
     </div>
   );
