@@ -64,7 +64,7 @@ Attendance fields:
 - `is_attendance_open`: must agree with whether code and expiry are set.
 - `attendance_expires_at`: timestamp after which check-in is rejected.
 
-PINs use a cryptographic random-number generator. The opening API makes the PIN valid for 5 minutes by default (instructor may choose 1–15), returns the code to the assigned instructor/admin only, and clears it on close/expiry. The server sweeps expired sessions every 15 seconds, and check-in also checks expiry directly.
+PINs use a cryptographic random-number generator. The opening API makes the PIN valid for 1 minute by default (instructor may choose 1–15), returns the code to the assigned instructor/admin only, and clears it on close/expiry. The server sweeps expired sessions every 15 seconds, and check-in also checks expiry directly.
 
 ### `session_materials`
 
@@ -76,7 +76,7 @@ One row per student/session (`UNIQUE (session_id, user_id)`). `status` is `prese
 
 ### `attendance_pin_attempts`
 
-Records PIN validation attempts to limit guessing. Five failed attempts for one student/session within 15 minutes return HTTP 429. Attempts cascade with their session/user.
+Records PIN validation attempts to limit guessing. A student has two attempts per session; after two failed attempts check-in returns HTTP 429 and the lecturer records the attendance manually. Attempts cascade with their session/user.
 
 ### `quizzes`
 

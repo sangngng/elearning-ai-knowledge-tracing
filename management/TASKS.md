@@ -13,7 +13,7 @@ Trạng thái: `todo`, `doing`, `review`, `done`. Bảng được rà vào vào 
 | S1-14 | Thêm `GET /api/me` và `GET /api/classes` (lớp của tôi, kèm sĩ số) cho frontend | 17/11 | Hai endpoint, tài liệu trong `backend/README.md` | Sinh viên thấy lớp đã ghi danh, giảng viên thấy lớp đang dạy; có test | todo |
 | S1-5 | Chạy thật test case T13-T16 và ghi kết quả | 18/11 | `docs/testing/T13-T16.md` kèm log hoặc ảnh | Mỗi case có kết quả Đạt/Không đạt và bằng chứng | todo |
 | S1-4 | Dockerfile cho backend và frontend; `docker compose --profile app up` chạy được | 19/11 | Hai Dockerfile, compose chạy | Từ máy sạch, một lệnh lên đủ DB, API, giao diện; `/health` trả `ok` | todo |
-| S1-6 | Test tự động cho điểm danh PIN: khóa sau 5 lần sai, PIN hết hạn, check-in trùng | 19/11 | Thư mục test và báo cáo đạt/không đạt | `npm test` chạy được; 3 kịch bản đều đạt | todo |
+| S1-6 | Test tự động cho điểm danh PIN: khóa sau 2 lần sai, PIN hết hạn, check-in trùng | 19/11 | Thư mục test và báo cáo đạt/không đạt | `npm test` chạy được; 3 kịch bản đều đạt | todo |
 | S1-7 | Test đồng thời cho trigger sĩ số lớp (nhiều yêu cầu ghi danh cùng lúc) | 20/11 | Script và kết quả | Không vượt `max_capacity` dù chạy song song | todo |
 | S1-12 | Viết mục API và bảo mật cho báo cáo (endpoint, xác thực, rate limit, trigger) | 21/11 | 3-4 trang, Markdown hoặc LaTeX | Số liệu khớp mã nguồn hiện tại | todo |
 

@@ -7,10 +7,14 @@ export const academicRouter = Router()
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/
-// Attendance PIN lifetime. Default 5 minutes; an instructor may choose 1 to 15.
-const PIN_DEFAULT_MINUTES = 5
+// Attendance PIN lifetime. Default 1 minute; an instructor may choose 1 to 15.
+const PIN_DEFAULT_MINUTES = 1
 const PIN_MIN_MINUTES = 1
 const PIN_MAX_MINUTES = 15
+// A student gets two PIN attempts per session. After two wrong PINs the student must ask the
+// lecturer, who records the attendance manually.
+const PIN_MAX_FAILED_ATTEMPTS = 2
+const PIN_LOCKED_MESSAGE = 'Too many incorrect PIN attempts for this session. Ask the lecturer to record your attendance.'
 
 const routeParam = (value: string | string[]) => Array.isArray(value) ? value[0] ?? '' : value
 
@@ -269,20 +273,21 @@ academicRouter.post('/api/sessions/:sessionId/attendance/check-in', requireRoles
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))', [sessionId, req.user!.id])
     const attempts = await client.query(
       `SELECT count(*)::integer AS failed_count FROM attendance_pin_attempts
-       WHERE session_id = $1 AND user_id = $2 AND succeeded = false
-         AND attempted_at >= now() - interval '15 minutes'`,
+       WHERE session_id = $1 AND user_id = $2 AND succeeded = false`,
       [sessionId, req.user!.id],
     )
-    if (attempts.rows[0].failed_count >= 5) {
+    const failedCount: number = attempts.rows[0].failed_count
+    if (failedCount >= PIN_MAX_FAILED_ATTEMPTS) {
       await client.query('ROLLBACK')
-      return res.status(429).json({ error: 'Too many incorrect PIN attempts. Try again after 15 minutes.' })
+      return res.status(429).json({ error: PIN_LOCKED_MESSAGE, attemptsLeft: 0 })
     }
     const expected = String(session.attendance_code)
     const matches = timingSafeEqual(Buffer.from(code), Buffer.from(expected))
     if (!matches) {
       await client.query('INSERT INTO attendance_pin_attempts (session_id, user_id, succeeded) VALUES ($1, $2, false)', [sessionId, req.user!.id])
       await client.query('COMMIT')
-      return res.status(401).json({ error: 'Incorrect attendance PIN' })
+      const attemptsLeft = Math.max(0, PIN_MAX_FAILED_ATTEMPTS - failedCount - 1)
+      return res.status(401).json({ error: attemptsLeft > 0 ? 'Incorrect attendance PIN' : PIN_LOCKED_MESSAGE, attemptsLeft })
     }
     const checkin = await client.query(
       // Opening the PIN is the roll call: a valid check-in within the PIN lifetime is 'present'.

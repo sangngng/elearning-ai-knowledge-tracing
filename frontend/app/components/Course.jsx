@@ -253,11 +253,11 @@ function AttendanceTab({ app }) {
               {pin.code.split('').map((d, i) => <div className="pin-digit" key={`${pin.code}-${i}`}>{expired ? '•' : d}</div>)}
             </div>
             <div className="pin-timer"><Icon name="clock" size={16} /> {expired ? 'Phiên đã hết hạn' : <>Hết hạn sau <b>{fmt(pin.seconds)}</b></>}</div>
-            <div className="pin-bar"><i style={{ width: `${(pin.seconds / 300) * 100}%` }} /></div>
+            <div className="pin-bar"><i style={{ width: `${(pin.seconds / 60) * 100}%` }} /></div>
             <button className="btn btn-light btn-block" style={{ marginTop: 22 }} onClick={generatePin}>
               <Icon name="refresh" size={17} /> {expired ? 'Mở phiên mới' : 'Tạo mã PIN mới'}
             </button>
-            <p style={{ marginTop: 12, fontSize: 12, opacity: 0.75 }}>Mã gồm 4 chữ số, hiệu lực 5 phút. Tối đa 5 lần nhập sai.</p>
+            <p style={{ marginTop: 12, fontSize: 12, opacity: 0.75 }}>Mã gồm 4 chữ số, hiệu lực 1 phút. Mỗi sinh viên được nhập 2 lần; sai cả 2 lần thì giảng viên điểm danh thủ công.</p>
           </div>
         ) : (
           <div className="card card-pad" style={{ textAlign: 'center', display: 'grid', gap: 14, justifyItems: 'center' }}>

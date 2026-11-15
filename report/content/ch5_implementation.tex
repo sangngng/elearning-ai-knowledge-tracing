@@ -64,8 +64,8 @@ The check-in endpoint runs in one transaction and follows the steps below. The l
     \item If the student already checked in with the PIN, answer \texttt{200} with \texttt{alreadyCheckedIn} and record nothing.
     \item If the window is closed or the expiry has passed, clear the PIN and answer \texttt{410}.
     \item Take a transaction-level advisory lock on the pair (session, student) so that parallel requests of the same student are processed one at a time.
-    \item Count the failed attempts of the student for this session in the last 15 minutes; if there are five or more, answer \texttt{429}.
-    \item Compare the PIN with \code{timingSafeEqual}. If different, insert a failed attempt and answer \texttt{401}.
+    \item Count the failed attempts of the student for this session; if there are two or more, answer \texttt{429} (the student must ask the lecturer for manual marking).
+    \item Compare the PIN with \code{timingSafeEqual}. If different, insert a failed attempt and answer \texttt{401} with the number of attempts left.
     \item Insert the attendance record with \code{ON CONFLICT (session_id, user_id) DO NOTHING}. If nothing was inserted (a concurrent request won), answer \texttt{409}; otherwise log a successful attempt and answer \texttt{201}.
 \end{enumerate}
 
@@ -83,7 +83,7 @@ Status & Meaning\\
 404 & The session does not exist.\\
 409 & A concurrent request of the same student created the record first.\\
 410 & The window is closed or expired.\\
-429 & Five failed attempts in the last 15 minutes.\\
+429 & Two failed attempts in this session; the lecturer records the attendance manually.\\
 \end{tblr}
 \end{table}
 

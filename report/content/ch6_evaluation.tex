@@ -34,7 +34,7 @@ T6 & Eight students enroll in parallel into the last free seat of a class & Exac
 T7 & Student calls \code{attendance/open} & HTTP 403 & Passed\\
 T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} & Passed\\
 T9 & Check in after expiry & HTTP 410; PIN cleared & Passed\\
-T10 & Six wrong PINs in 15 minutes & Five get 401, the sixth gets 429 & Passed\\
+T10 & Three wrong PINs in one session & The first two get 401 (one, then zero attempts left), the third gets 429 & Passed\\
 T11 & Check in twice with the correct PIN & Second gets HTTP 200 with \texttt{alreadyCheckedIn}; no duplicate record & Passed\\
 T12 & Student fetches quiz questions & No \code{correct_answer} field in the response & Passed\\
 T13 & Login with the sample lecturer and student accounts in the prototype & Role-specific home page is shown & Checked manually\\
@@ -71,7 +71,7 @@ UC7 & Summary API; statistics screen & Filters; export; threshold highlighting\\
 \begin{enumerate}
     \item The front end is not yet connected to the API; screens use demonstration data.
     \item The CAS login page is a reproduction and does not authenticate with the real HCMUT service.
-    \item The PIN is stored in clear text in \code{attendance_code} while the window is open (it is cleared at close). This is acceptable for a value that lives minutes and is shown to the lecturer, but it means that anybody with read access to the database can read an active PIN. Hashing would not help because the lecturer must see the PIN.
+    \item The PIN is stored in clear text in \code{attendance_code} while the window is open (it is cleared at close). This is acceptable for a value that lives one minute and is shown to the lecturer, but it means that anybody with read access to the database can read an active PIN. Hashing would not help because the lecturer must see the PIN.
     \item A four-digit PIN does not stop a present student from sharing it with an absent one (Section~\ref{sec:pin-security}).
     \item The question bank is in English while the interface is in Vietnamese; a bilingual bank is planned.
     \item The distribution of questions per skill is uneven (Table~\ref{tab:skills}).

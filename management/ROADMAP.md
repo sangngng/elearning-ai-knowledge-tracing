@@ -14,7 +14,7 @@ Họp GVHD vào Chủ nhật, hai tuần một lần. Cập nhật lần cuối:
 |---|---|---|
 | Báo cáo | 40 trang, 7 mục, 44 tài liệu tham khảo | Mốc 30/11 cần 50 trang, 15/12 cần 70 trang |
 | CSDL | 14 bảng, schema áp dụng sạch và chạy lại được (đã kiểm tra trên PostgreSQL) | Chưa có script seed |
-| Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN (5 phút), quiz đã có; đã sửa lỗi check-in PIN trả 500 | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
+| Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN (1 phút, 2 lần nhập), quiz đã có; đã sửa lỗi check-in PIN trả 500 | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
 | Frontend | Build đạt; giao diện BKeL đầy đủ | Toàn bộ dữ liệu là tĩnh, chưa gọi API nào |
 | Docker | Compose chạy được PostgreSQL | Chưa có Dockerfile cho backend và frontend |
 | Dữ liệu CO2003 | 15 buổi, 40 câu, 11 kỹ năng | Phân bố không đều: DSA-COMPLEXITY và DSA-RECURSION chỉ có 1 câu |
@@ -60,7 +60,7 @@ Quyết định: tích hợp AI chỉ bắt đầu khi hệ thống đủ UC1-UC
 |---|---|---|
 | G1 Cấu trúc | 22/11 | Kho gọn, README chạy đúng từ đầu; `npm run typecheck` (backend) và `npm run build` (frontend) đạt |
 | G2 Tích hợp | 22/11 | Đăng nhập, lịch, danh sách buổi, mở PIN và check-in chạy end-to-end trên dữ liệu seed |
-| G3 Test | 06/12 | Mỗi UC1-UC7 có ít nhất một test tự động hoặc bản ghi test thủ công có bằng chứng; test PIN (khóa sau 5 lần sai, PIN hết hạn, check-in trùng) và test sĩ số đồng thời đạt |
+| G3 Test | 06/12 | Mỗi UC1-UC7 có ít nhất một test tự động hoặc bản ghi test thủ công có bằng chứng; test PIN (khóa sau 2 lần sai, PIN hết hạn, check-in trùng) và test sĩ số đồng thời đạt |
 | G4 Tài liệu | 15/12 | 44 tài liệu tham khảo đã đối chiếu, có ngày truy cập; số liệu trong báo cáo khớp với mã nguồn |
 | G5 Phát hành | 28/12 | Tag `v1.0`, chạy sạch từ máy trống theo README, không còn lỗi nghiêm trọng |
 

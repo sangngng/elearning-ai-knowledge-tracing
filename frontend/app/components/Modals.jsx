@@ -123,7 +123,7 @@ export function PinModal({ app }) {
           {state === 'ok' ? <><Icon name="check" size={18} stroke={2.6} /> Đã điểm danh</> : 'Xác nhận điểm danh'}
         </button>
         <p className="muted" style={{ fontSize: 12, textAlign: 'center', marginTop: 12 }}>
-          <Icon name="shield" size={13} style={{ display: 'inline', verticalAlign: '-2px' }} /> Tối đa 5 lần nhập sai. Mã được băm SHA-256 + salt khi lưu.
+          <Icon name="shield" size={13} style={{ display: 'inline', verticalAlign: '-2px' }} /> Bạn có 2 lần nhập. Sai cả 2 lần thì báo giảng viên để được điểm danh thủ công.
         </p>
       </form>
     </Frame>

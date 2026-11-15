@@ -13,8 +13,8 @@ const USERS = {
   student: { role: 'student', name: 'Nguyễn Văn B', code: '2110001', title: 'Sinh viên', email: 'b.nguyen@hcmut.edu.vn' },
 };
 
-const PIN_TTL = 300; // 5 phút
-const PIN_MAX_ATTEMPTS = 5;
+const PIN_TTL = 60; // 1 phút
+const PIN_MAX_ATTEMPTS = 2;
 const ME_ID = '2110001';
 
 const randomPin = () => String(Math.floor(1000 + Math.random() * 9000));
@@ -74,13 +74,13 @@ export default function Portal() {
   const generatePin = useCallback(() => {
     attempts.current = 0;
     setPin({ code: randomPin(), seconds: PIN_TTL, active: true });
-    toast('Đã tạo mã PIN mới, hiệu lực 5 phút', 'ok');
+    toast('Đã tạo mã PIN mới, hiệu lực 1 phút', 'ok');
   }, [toast]);
 
   const submitPin = useCallback(
     (code) => {
       if (attempts.current >= PIN_MAX_ATTEMPTS) {
-        return { success: false, message: 'Bạn đã nhập sai quá 5 lần. Vui lòng liên hệ giảng viên để được mở lại.' };
+        return { success: false, message: 'Bạn đã nhập sai 2 lần. Vui lòng báo giảng viên để được điểm danh thủ công.' };
       }
       if (!pin.active || pin.seconds <= 0) {
         return { success: false, message: 'Phiên điểm danh đã hết hạn.' };
@@ -91,7 +91,7 @@ export default function Portal() {
       }
       attempts.current += 1;
       const left = PIN_MAX_ATTEMPTS - attempts.current;
-      return { success: false, message: left > 0 ? `Mã PIN không đúng. Bạn còn ${left} lần thử.` : 'Bạn đã nhập sai quá 5 lần. Vui lòng liên hệ giảng viên.' };
+      return { success: false, message: left > 0 ? `Mã PIN không đúng. Bạn còn ${left} lần thử.` : 'Bạn đã nhập sai 2 lần. Vui lòng liên hệ giảng viên.' };
     },
     [pin]
   );

@@ -86,7 +86,7 @@ Mỗi loại tài liệu chỉ có một bản: CSDL ở `backend/db/`, sơ đ�
 ## 5. Tham khảo kỹ thuật
 
 - Xác thực: JWT (hạn một ngày), gửi qua header `Authorization: Bearer <token>`. Đăng ký tạo tài khoản sinh viên.
-- Điểm danh PIN: bốn chữ số ngẫu nhiên, hiệu lực 5 phút (giảng viên có thể chọn 1-15 phút qua `durationMinutes`); sinh viên nhập sai 5 lần trong 15 phút bị khóa (HTTP 429); mỗi sinh viên chỉ có một bản ghi điểm danh mỗi buổi.
+- Điểm danh PIN: bốn chữ số ngẫu nhiên, hiệu lực 1 phút (giảng viên có thể chọn 1-15 phút qua `durationMinutes`); mỗi sinh viên chỉ được nhập 2 lần mỗi buổi, sai cả 2 lần thì bị khóa (HTTP 429) và phải báo giảng viên điểm danh tay; mỗi sinh viên chỉ có một bản ghi điểm danh mỗi buổi.
 - Sĩ số lớp: trigger PostgreSQL với khóa `FOR UPDATE`; vượt sĩ số trả lỗi `Class capacity has been reached`.
 - Mã định danh phải là UUID hợp lệ (ký tự thứ 13 từ 1 đến 8, ký tự thứ 17 là 8, 9, a hoặc b). Khi viết seed, để PostgreSQL sinh bằng `gen_random_uuid()`.
 - Danh sách endpoint và quy tắc: `backend/README.md`. Từ điển dữ liệu: `docs/database/DATABASE_DICTIONARY.md`.
