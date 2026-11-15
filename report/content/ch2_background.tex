@@ -25,7 +25,7 @@ Moodle is highly extensible, but several class-level operations are not part of 
 \label{tab:gap}
 \begin{tblr}{colspec={Q[l,3.3cm]X[l]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
 Need & Generic LMS (default) & Proposed system\\
-Offering of a course in a semester with a capacity & Course and enrollment methods; capacity usually handled by the registration system & First-class entities \code{semesters}, \code{course_classes}, \code{enrollments}; capacity enforced by a database trigger\\
+Offering of a course in a semester with a capacity & Course and enrollment methods; capacity usually handled by the registration system & First-class entities \code{semesters}, \code{course_classes}, \code{enrollments}; the class list is imported from the university registration system (self-enrollment only for demonstration); capacity enforced by a database trigger\\
 Exactly 15 numbered sessions with date, time and room & Weekly sections with free-form dates & \code{course_sessions} with \code{session_number} in $[1,15]$ and a transactional bulk creation\\
 Proof of presence in class & Attendance via plugin or manual tick & Random four-digit PIN with expiry, rate limit and one record per student and session\\
 Participation per session and per student & Reports depend on the plugin & Statistics endpoint and page (per student; per session in progress)\\
