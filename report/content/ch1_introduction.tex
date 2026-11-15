@@ -45,7 +45,7 @@ The main contributions of the first phase are:
 
 \begin{enumerate}
     \item a \textbf{use-case model} of seven use cases, of which UC5--UC7 (sessions and timetable, PIN attendance, attendance statistics) are specified in full detail;
-    \item a \textbf{fourteen-table relational schema} with composite foreign keys, check constraints, partial unique indexes and a row-locking trigger that guarantees class capacity under concurrent enrollment;
+    \item a \textbf{fourteen-table relational schema} with composite foreign keys, check constraints, partial unique indexes and a row-locking trigger that guarantees class capacity even when class lists are imported concurrently;
     \item a \textbf{PIN attendance protocol} that combines a cryptographically secure random generator, a short expiry, a background sweep, a constant-time comparison, one record per student and session, and rate limiting;
     \item a \textbf{front-end prototype} with 100\% vector icons, light and dark themes, and the pages ``My courses'', ``Sessions'', ``Attendance'', ``Timetable'', ``Statistics'' and ``Quiz'';
     \item a \textbf{pilot dataset} for CO2003: fifteen sessions, eleven skill labels and forty questions with answers and explanations.

@@ -10,7 +10,7 @@ Testing follows the usual levels of software verification~\cite{sommerville2016s
 \begin{itemize}
     \item \textbf{Database level.} Apply \code{schema.sql} to an empty database; verify each constraint with a statement that must fail.
     \item \textbf{API level.} Call each endpoint with valid and invalid input and with each role; verify status codes and bodies.
-    \item \textbf{Concurrency level.} Fire parallel enrollment requests at a class that has one free seat, and parallel wrong-PIN requests from one student.
+    \item \textbf{Concurrency level.} Run parallel class-list imports into a class that has one free seat, and parallel wrong-PIN requests from one student.
     \item \textbf{Interface level.} Walk through each use case in the browser in both themes and on three viewport widths.
     \item \textbf{Usability level.} Task-based test with students and a SUS questionnaire~\cite{brooke1996sus, bangor2008empirical}.
 \end{itemize}
@@ -30,7 +30,8 @@ T2 & Insert session number 16 & Rejected by \code{CHECK} & Passed\\
 T3 & Insert a session with end before start & Rejected by \code{CHECK} & Passed\\
 T4 & Set a PIN of 3 digits or without expiry & Rejected by \code{CHECK} & Passed\\
 T5 & Insert two attendance records for the same student and session & Second rejected by \code{UNIQUE} & Passed\\
-T6 & Eight students enroll in parallel into the last free seat of a class & Exactly one succeeds; the others get HTTP 409 (capacity reached) & Passed\\
+T6 & Six imports run in parallel, each adding one student to the last free seat of a class & Exactly one succeeds; the others get HTTP 409 (capacity reached) & Passed\\
+T6b & Import a list with more students than free seats & Whole import rejected with HTTP 409; nobody is added & Passed\\
 T7 & Student calls \code{attendance/open} & HTTP 403 & Passed\\
 T8 & Check in with a correct PIN while open & HTTP 201; record status \emph{present} & Passed\\
 T9 & Check in after expiry & HTTP 410; PIN cleared & Passed\\
@@ -45,7 +46,7 @@ T17 & Restart PostgreSQL while the API is serving requests & API stays up and re
 \end{tblr}
 \end{table}
 
-On 14 November 2026 the team ran the database tests T1--T5 directly in PostgreSQL and the API tests T6--T12 and T17 against the running system (PostgreSQL in Docker with the demonstration dataset), using a script of 49 API checks. Forty-three checks passed; the six failures correspond to features that are not implemented yet (manual attendance, per-session statistics, adding session materials, teaching periods in the timetable, and the endpoints that return the current user and his or her classes). Two defects found during this work were fixed: a correct PIN returned HTTP 500, and the API process stopped when the database restarted. The script is being turned into an automated suite that runs with \texttt{npm test}. We deliberately do not report performance figures: the target of NFR6 has not been measured.
+On 14 November 2026 the team ran the database tests T1--T5 directly in PostgreSQL and the API tests T6--T12 and T17 against the running system (PostgreSQL in Docker with the demonstration dataset), using a script of 51 API checks. Forty-five checks passed; the six failures correspond to features that are not implemented yet (manual attendance, per-session statistics, adding session materials, teaching periods in the timetable, and the endpoints that return the current user and his or her classes). Two defects found during this work were fixed: a correct PIN returned HTTP 500, and the API process stopped when the database restarted. The script is being turned into an automated suite that runs with \texttt{npm test}. We deliberately do not report performance figures: the target of NFR6 has not been measured.
 
 \subsection{Evaluation Against Requirements}
 

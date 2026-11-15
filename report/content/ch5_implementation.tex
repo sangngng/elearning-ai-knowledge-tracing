@@ -34,7 +34,7 @@ The API is organized in the following modules:
     \item \code{config/}: reads environment variables (database URL, JWT secret, port) and creates the connection pool;
     \item \code{middleware/auth.ts}: verifies the JWT and provides \code{requireRoles(...)};
     \item \code{routes/auth.ts} and \code{routes/quizzes.ts}: registration, login and quiz submission;
-    \item \code{routes/academic.ts}: schedule, sessions, enrollment, attendance and statistics;
+    \item \code{routes/academic.ts}: schedule, sessions, class-list import, attendance and statistics;
     \item \code{server.ts}: starts the HTTP server and the expiry sweep.
 \end{itemize}
 
@@ -249,7 +249,7 @@ Table~\ref{tab:trace} shows, for every functional requirement, where it is imple
 ID & Where implemented & API & UI\\
 FR1 & \code{/api/auth/*}, login page & Yes & Yes\\
 FR2 & \code{/api/schedule}, course cards & Yes & Yes\\
-FR3 & \code{/api/classes/:id/enroll}, trigger & Yes & Partial\\
+FR3 & \code{/enrollments/import}, trigger & Yes & No\\
 FR4 & \code{/sessions}, \code{/sessions/bulk} & Create only & Yes\\
 FR5 & \code{CHECK}/\code{UNIQUE} (number, time range); room-conflict check is not implemented yet & Partial & Partial\\
 FR6 & \code{/api/schedule}, timetable tab & Yes & Yes\\

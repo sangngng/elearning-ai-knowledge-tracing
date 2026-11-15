@@ -32,7 +32,7 @@ The functional requirements are grouped by module. The identifiers are used in t
 ID & Requirement & Use case\\
 FR1 & A user can register (as a student) and log in with e-mail and password; lecturers and administrators are provisioned by an administrator. & UC1\\
 FR2 & The system shows the user's courses for the active semester as cards. & UC1\\
-FR3 & The class list of a class is imported from the university registration system, which the system does not replace; for demonstration a student can also enroll himself or herself. The number of enrolled students must never exceed the maximum capacity of the class. & UC5, UC7\\
+FR3 & The class list of a class is imported from the university registration system, which the system does not replace: a lecturer or administrator imports the list by student e-mail. The number of enrolled students must never exceed the maximum capacity of the class. & UC5, UC7\\
 FR4 & A lecturer can create the fifteen sessions of a class in one operation, or one session at a time, and can edit or delete a session. & UC5\\
 FR5 & The system validates sessions: unique number in $[1,15]$, end time after start time, and no conflict. & UC5\\
 FR6 & A student sees a weekly timetable with the sessions of the classes in which he or she is enrolled; the current session is highlighted. & UC5\\
@@ -58,7 +58,7 @@ FR15 & The user can switch between light and dark themes; the choice is remember
 ID & Quality & Requirement\\
 NFR1 & Security & Passwords are stored only as bcrypt hashes; API calls other than login and registration require a valid JWT; the answer key of a question is never sent to students; PIN check-in is rate limited.\\
 NFR2 & Integrity & Invariants (capacity, uniqueness of attendance, valid time ranges, valid PIN format) are enforced by the database and not only by the application.\\
-NFR3 & Concurrency & Concurrent enrollment of many students into the same class must not exceed the capacity.\\
+NFR3 & Concurrency & Concurrent imports into the same class must not make it exceed its capacity.\\
 NFR4 & Usability & The interface follows the BKeL visual identity; all primary actions are reachable in at most three clicks; no emoji or raster icons are used.\\
 NFR5 & Accessibility & Text contrast is at least 4.5:1 in both themes~\cite{wcag21}; interactive elements are reachable by keyboard.\\
 NFR6 & Performance & Target: typical API calls (login, schedule, check-in) answer within 500\,ms for a class of 60 students. This target has not been measured yet (see Section~\ref{ch:plan}).\\
@@ -193,7 +193,7 @@ ID & Rule & Enforced by\\
 R1 & At most one semester is active at a time. & Partial unique index on \code{semesters(is_active)}\\
 R2 & A class code is unique within a semester. & \code{UNIQUE (semester_id, class_code)}\\
 R3 & A student has at most one enrollment row per class; a dropped student can re-enroll. & \code{UNIQUE (class_id, user_id)} and status column\\
-R4 & Enrollment never exceeds the capacity. & Trigger with \texttt{FOR UPDATE}\\
+R4 & A class never exceeds its capacity, whatever the source of the class list. & Trigger with \texttt{FOR UPDATE}\\
 R5 & Session numbers are 1--15 and unique within a class. & \code{CHECK} and \code{UNIQUE (class_id, session_number)}\\
 R6 & A session ends after it starts. & \code{CHECK (end_time > start_time)}\\
 R7 & A PIN has exactly four digits; the window is open if and only if a PIN and an expiry exist. & Two \code{CHECK} constraints\\

@@ -59,7 +59,7 @@ The ``pipeline'' of the system is the path that data follow from the moment a le
 \end{figure}
 
 \begin{enumerate}
-    \item \textbf{Set up.} An administrator creates the semester (e.g.\ HK261), the course catalog entry (CO2003) and the class (CC01) with a capacity; students enroll.
+    \item \textbf{Set up.} An administrator creates the semester (e.g.\ HK261), the course catalog entry (CO2003) and the class (CC01) with a capacity; the class list is imported from the university registration system.
     \item \textbf{Schedule.} The lecturer creates the 15 sessions in one transactional call and attaches materials to each session.
     \item \textbf{Teach.} During a session, the lecturer opens attendance; students check in with the PIN; students may take the quiz of the session.
     \item \textbf{Aggregate.} Every check-in becomes a row in \code{attendance_records}; every answer becomes a row in \code{quiz_interactions}. Rows are append-only in normal use.
@@ -107,7 +107,7 @@ Figure~\ref{fig:arch} shows the architecture. The browser runs the Next.js appli
 Component & Responsibility\\
 Next.js application & Renders pages, keeps UI state (theme, active tab, modals), calls the API, shows feedback (toasts, countdowns).\\
 Auth middleware & Verifies the JWT of every protected request and attaches the user and the role to the request.\\
-Academic routes & Schedule of the current user, sessions of a class, bulk creation of the 15 sessions, enrollment.\\
+Academic routes & Schedule of the current user, sessions of a class, bulk creation of the 15 sessions, import of class lists.\\
 Attendance routes & Open and close the window, check in with the PIN, class attendance summary.\\
 Quiz routes & Return published questions without the answer key; record the interactions of a submission.\\
 Expiry sweep & A timer in the server process that closes attendance windows whose expiry has passed (every 15 seconds).\\
@@ -139,7 +139,7 @@ Figure~\ref{fig:seq-att} shows the sequence of messages for UC6. The student doe
 \draw[msg, dashed] (5.2,-3.8) -- node[lab, above=2pt]{PIN + expiry\\(instructor only)} (0,-3.8);
 \node[lab, draw, fill=gray!10, text width=3cm] at (0,-5.0) {announces the PIN in class};
 \draw[msg] (15.6,-6.0) -- node[lab, above=2pt]{POST /attendance/check-in\\\{PIN\}} (5.2,-6.0);
-\draw[msg] (5.2,-7.0) -- node[lab, above=2pt]{enrolled? open? not expired?\\fewer than 5 failures?} (10.4,-7.0);
+\draw[msg] (5.2,-7.0) -- node[lab, above=2pt]{enrolled? open? not expired?\\fewer than 2 failures?} (10.4,-7.0);
 \draw[msg, dashed] (10.4,-7.9) -- node[lab, above=2pt]{session, attempts} (5.2,-7.9);
 \node[lab, draw, fill=gray!10, text width=3.6cm] at (5.2,-8.5) {compare PIN in constant time};
 \draw[msg] (5.2,-9.9) -- node[lab, above=2pt]{INSERT attendance;\\INSERT attempt (success)} (10.4,-9.9);
@@ -290,7 +290,7 @@ POST & \code{/api/auth/register} & Create a student account\\
 POST & \code{/api/auth/login} & Return a one-day JWT\\
 GET & \code{/api/schedule?semesterId=} & Sessions of the current user (enrolled or taught), ordered by date and time\\
 GET & \code{/api/classes/:classId/sessions} & Sessions and materials of a class; the PIN is visible only to its instructor or an administrator while active\\
-POST & \code{/api/classes/:classId/enroll} & Student enrollment; the trigger serializes concurrent joins\\
+POST & \code{/api/classes/:classId/enrollments/import} & Lecturer imports the class list by student e-mail; all or nothing; the trigger keeps the capacity\\
 POST & \code{/api/classes/:classId/sessions} & Instructor creates one session\\
 POST & \code{/api/classes/:classId/sessions/bulk} & Instructor creates sessions 1--15 in one transaction\\
 POST & \code{/api/sessions/:id/attendance/open} & Open the window (one minute by default, 1--15 allowed); returns PIN and expiry\\
@@ -335,7 +335,7 @@ Privilege escalation & The JWT carries the role; each route checks it; opening a
 Answer-key leakage & The quiz endpoint selects columns explicitly and never returns \code{correct_answer}.\\
 Credential theft & bcrypt hashes~\cite{provos1999bcrypt}; JWT with a long private secret read from the environment; tokens expire after one day.\\
 SQL injection & Parameterized queries only.\\
-Enrollment race & Row lock in the trigger (Listing~\ref{lst:trigger}).\\
+Concurrent class-list imports & Row lock in the trigger (Listing~\ref{lst:trigger}).\\
 \end{tblr}
 \end{table}
 

@@ -29,7 +29,7 @@ src/
 
 - `GET /api/schedule?semesterId=<uuid>` — current user's enrolled/taught class sessions, ordered by date and time.
 - `GET /api/classes/:classId/sessions` — the class's numbered sessions and materials; PIN is visible only to its instructor/admin while active.
-- `POST /api/classes/:classId/enroll` — student enrollment; the database capacity trigger serializes concurrent joins.
+- `POST /api/classes/:classId/enrollments/import` — instructor of the class (or admin) imports the class list from the university registration system, body `{ "emails": ["b.nguyen@hcmut.edu.vn", ...] }` (1–500). All or nothing; returns `added`, `alreadyEnrolled`, `notFound`. The database capacity trigger rejects an import that would exceed `max_capacity` (409), also under concurrent imports. Students cannot enroll themselves.
 - `POST /api/classes/:classId/sessions` — instructor creates one session (`sessionNumber` 1–15).
 - `POST /api/classes/:classId/sessions/bulk` — instructor creates exactly sessions 1 through 15 transactionally.
 - `POST /api/sessions/:sessionId/attendance/open` — instructor opens PIN check-in; valid 1 minute by default (`durationMinutes` 1–15). Returns the four-digit PIN and expiry.

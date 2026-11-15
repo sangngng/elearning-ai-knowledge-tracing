@@ -83,28 +83,50 @@ academicRouter.get('/api/schedule', async (req: AuthRequest, res, next) => {
   } catch (error) { return next(error) }
 })
 
-academicRouter.post('/api/classes/:classId/enroll', requireRoles('student'), async (req: AuthRequest, res, next) => {
+// Class lists come from the university registration system; this system does not run course
+// registration. An instructor (or admin) imports the list of a class by student e-mail. The import
+// is all or nothing, and the capacity trigger still guarantees that the class never exceeds
+// max_capacity, even if a list is imported twice or two imports run at the same time.
+const MAX_IMPORT_SIZE = 500
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+academicRouter.post('/api/classes/:classId/enrollments/import', requireRoles('instructor', 'admin'), async (req: AuthRequest, res, next) => {
+  const classId = routeParam(req.params.classId)
+  const raw: unknown = req.body?.emails
+  if (!uuidPattern.test(classId) || !Array.isArray(raw) || raw.length === 0 || raw.length > MAX_IMPORT_SIZE
+    || raw.some((item) => typeof item !== 'string' || !emailPattern.test(item.trim()))) {
+    return res.status(400).json({ error: `classId must be a UUID and emails must be a list of 1 to ${MAX_IMPORT_SIZE} e-mail addresses` })
+  }
+  const emails = Array.from(new Set((raw as string[]).map((item) => item.trim().toLowerCase())))
+  const client = await pool.connect()
   try {
-    const classId = routeParam(req.params.classId)
-    if (!uuidPattern.test(classId)) return res.status(400).json({ error: 'classId must be a UUID' })
-    const classResult = await pool.query(
-      `SELECT cc.id FROM course_classes cc JOIN semesters s ON s.id = cc.semester_id
-       WHERE cc.id = $1 AND s.is_active = true`,
-      [classId],
+    if (!(await canManageClass(classId, req.user!))) return res.status(404).json({ error: 'Class not found or not assigned to you' })
+    await client.query('BEGIN')
+    const students = await client.query(
+      `SELECT id, lower(email) AS email FROM users WHERE lower(email) = ANY($1::text[]) AND role = 'student'`,
+      [emails],
     )
-    if (!classResult.rowCount) return res.status(404).json({ error: 'Class is not available for enrollment' })
-    const result = await pool.query(
-      `INSERT INTO enrollments (class_id, user_id, status)
-       VALUES ($1, $2, 'enrolled')
-       ON CONFLICT (class_id, user_id) DO UPDATE
-         SET status = 'enrolled', enrolled_at = now()
-         WHERE enrollments.status = 'dropped'
-       RETURNING id, class_id, user_id, status, enrolled_at`,
-      [classId, req.user!.id],
-    )
-    if (!result.rowCount) return res.status(409).json({ error: 'Already enrolled in this class' })
-    return res.status(201).json({ enrollment: result.rows[0] })
-  } catch (error) { return next(error) }
+    const found = new Set<string>(students.rows.map((row: { email: string }) => row.email))
+    const notFound = emails.filter((email) => !found.has(email))
+    let added = 0
+    for (const student of students.rows as { id: string, email: string }[]) {
+      const result = await client.query(
+        `INSERT INTO enrollments (class_id, user_id, status)
+         VALUES ($1, $2, 'enrolled')
+         ON CONFLICT (class_id, user_id) DO UPDATE
+           SET status = 'enrolled', enrolled_at = now()
+           WHERE enrollments.status = 'dropped'
+         RETURNING id`,
+        [classId, student.id],
+      )
+      added += result.rowCount ?? 0
+    }
+    await client.query('COMMIT')
+    return res.status(201).json({ added, alreadyEnrolled: students.rows.length - added, notFound })
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    return next(error)
+  } finally { client.release() }
 })
 
 academicRouter.get('/api/classes/:classId/sessions', async (req: AuthRequest, res, next) => {
