@@ -388,9 +388,9 @@ academicRouter.put('/api/sessions/:sessionId/attendance/:userId', requireRoles('
     }
     const result = await pool.query(
       `INSERT INTO attendance_records (session_id, user_id, status, checkin_time, method, note)
-       SELECT cs.id, $2, $3,
-              CASE WHEN $3 IN ('present', 'late') THEN now() ELSE NULL END,
-              'manual', $4
+       SELECT cs.id, $2::uuid, $3::text,
+              CASE WHEN $3::text IN ('present', 'late') THEN now() ELSE NULL END,
+              'manual', $4::text
        FROM course_sessions cs JOIN course_classes cc ON cc.id = cs.class_id
        WHERE cs.id = $1 AND ($5 = 'admin' OR cc.instructor_id = $6)
          AND EXISTS (

@@ -130,7 +130,7 @@ test('GET /api/me and GET /api/classes return the authenticated student and enro
 })
 
 test('PIN check-in accepts a valid PIN once and rejects duplicate check-in', async () => {
-  const opened = await request(`/api/sessions/${sessionIds[0]}/attendance/open`, users[0])
+  const opened = await request(`/api/sessions/${sessionIds[0]}/attendance/open`, users[0], 'POST', {})
   assert.equal(opened.response.status, 200)
   assert.match(opened.payload.attendanceCode, /^\d{4}$/)
   const student = users[1]
@@ -143,13 +143,13 @@ test('PIN check-in accepts a valid PIN once and rejects duplicate check-in', asy
 })
 
 test('PIN expires and two incorrect attempts require lecturer intervention', async () => {
-  const expiredOpen = await request(`/api/sessions/${sessionIds[1]}/attendance/open`, users[0])
+  const expiredOpen = await request(`/api/sessions/${sessionIds[1]}/attendance/open`, users[0], 'POST', {})
   assert.equal(expiredOpen.response.status, 200)
   await pool.query("UPDATE course_sessions SET attendance_expires_at = now() - interval '1 second' WHERE id = $1", [sessionIds[1]])
   const expired = await request(`/api/sessions/${sessionIds[1]}/attendance/check-in`, users[1], 'POST', { attendanceCode: expiredOpen.payload.attendanceCode })
   assert.equal(expired.response.status, 410)
 
-  const opened = await request(`/api/sessions/${sessionIds[2]}/attendance/open`, users[0])
+  const opened = await request(`/api/sessions/${sessionIds[2]}/attendance/open`, users[0], 'POST', {})
   const wrongCode = opened.payload.attendanceCode === '0000' ? '9999' : '0000'
   const first = await request(`/api/sessions/${sessionIds[2]}/attendance/check-in`, users[2], 'POST', { attendanceCode: wrongCode })
   assert.equal(first.response.status, 401)

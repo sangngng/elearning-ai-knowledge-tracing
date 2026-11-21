@@ -74,8 +74,13 @@ async function seed() {
   const sessionsFile = await loadJson<{ course_code: string; course_name: string; sessions: SessionData[] }>('dsa_co2003_sessions_en.json')
   const questionsFile = await loadJson<{ course_code: string; questions: QuestionData[] }>('dsa_co2003_questions_en.json')
   const skillCodes = [...new Set(questionsFile.questions.map((item) => item.skill_code))]
-  if (sessionsFile.sessions.length !== 15 || questionsFile.questions.length !== 40 || skillCodes.length !== 11) {
-    throw new Error(`Expected 15 sessions, 40 questions and 11 skills; found ${sessionsFile.sessions.length}, ${questionsFile.questions.length} and ${skillCodes.length}`)
+  // The question bank grows over time, so only require a minimum per skill (4) rather than a fixed total.
+  const MIN_QUESTIONS_PER_SKILL = 4
+  const perSkill = new Map<string, number>()
+  for (const item of questionsFile.questions) perSkill.set(item.skill_code, (perSkill.get(item.skill_code) ?? 0) + 1)
+  const thinSkills = [...perSkill].filter(([, count]) => count < MIN_QUESTIONS_PER_SKILL).map(([code]) => code)
+  if (sessionsFile.sessions.length !== 15 || skillCodes.length !== 11 || thinSkills.length) {
+    throw new Error(`Expected 15 sessions, 11 skills and at least ${MIN_QUESTIONS_PER_SKILL} questions per skill; found ${sessionsFile.sessions.length} sessions, ${skillCodes.length} skills, thin skills: ${thinSkills.join(', ') || 'none'}`)
   }
   const sessionNumbers = new Set(sessionsFile.sessions.map((item) => item.session_number))
   if (!Array.from({ length: 15 }, (_, index) => index + 1).every((number) => sessionNumbers.has(number))
