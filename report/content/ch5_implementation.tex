@@ -169,18 +169,19 @@ Table~\ref{tab:pages} lists the pages and tabs of the prototype.
 
 \begin{table}[H]
 \centering
-\caption{Pages and tabs of the front-end prototype}
+\caption{Pages and tabs of the front end}
 \label{tab:pages}
 \begin{tblr}{colspec={Q[l,3.4cm]X[l]Q[l,2.4cm]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
 Page or tab & Content & Use case\\
-Login (CAS style) & Separate entry for the lecturer and the student role; sample accounts for demonstration & UC1\\
-Home / dashboard / my courses & Course cards for the active semester & UC1\\
-Course: Sessions & The 15 sessions with title, date, room and materials & UC5\\
-Course: Attendance & Open window with PIN and countdown (lecturer); PIN entry (student); live list & UC6\\
-Course: Timetable & Weekly grid with today's session highlighted & UC5\\
-Course: Participants & Enrolled students & UC7\\
-Course: Statistics & Enrollment against capacity; participation per session; rate per student & UC7\\
-Course: Quiz & Question bank of 40 questions; whole-bank quiz or one quiz per session & UC2\\
+Login & E-mail and password checked by the API; the role comes from the account; demonstration accounts & UC1\\
+Home / dashboard / my courses & Classes of the user and the next sessions & UC1\\
+Course: Sessions & The 15 sessions with date, time, periods, room and materials & UC1, UC5\\
+Course: Attendance & Lecturer: open (1 to 15 minutes) and close the PIN, class list refreshed every 3 seconds, manual status. Student: PIN entry with two attempts and own history & UC6\\
+Course: Timetable & Weekly grid of HCMUT periods 1--12 with the sessions of all the user's classes & UC5\\
+Course: Participants & Enrolled students with their attendance rate (lecturer only) & UC7\\
+Course: Statistics & Enrollment against capacity; rate per session (present, late, absent, excused) & UC7\\
+Course: Quiz & One quiz per session; each answer graded by the server & UC2\\
+Course: Competency map & Radar of skills with illustrative values until the AI service is connected & UC4\\
 \end{tblr}
 \end{table}
 
@@ -191,41 +192,43 @@ Figures~\ref{fig:login}--\ref{fig:stats} show the main screens. The interface la
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{images/login.png}
-\caption{Login page in the style of HCMUT CAS, with separate lecturer and student entries}
+\caption{Login page: e-mail and password checked by the API, with demonstration accounts}
 \label{fig:login}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth]{images/c_sessions.png}
-\caption{Course page: the fifteen sessions of CO2003 with their materials}
+\caption{Course page of the lecturer: the fifteen sessions of CO2003 with date, periods and room}
 \label{fig:sessions}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth]{images/c_attendance.png}
-\caption{Attendance tab: the PIN window opened by the lecturer, with countdown and class list}
+\caption{Attendance tab: PIN opened by the lecturer for one minute; the class list shows check-ins as they arrive and allows manual status}
 \label{fig:attendance}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth]{images/c_timetable.png}
-\caption{Weekly timetable with the current session highlighted}
+\caption{Weekly timetable of a student, placed on HCMUT periods; today's column is highlighted}
 \label{fig:timetable}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth]{images/c_stats.png}
-\caption{Statistics tab: enrollment against capacity, participation per session and rate per student}
+\caption{Statistics tab: enrollment against capacity and attendance rate per session}
 \label{fig:stats}
 \end{figure}
 
-\subsubsection{Authentication in the Prototype}
+\subsubsection{Connection to the API}
 
-The login page separates the two roles from the first screen instead of offering a role switch on the navigation bar, which a real system would not have. Sample accounts allow the demonstration to start with one click. At the time of writing, the prototype uses data stored in the front end for its demonstration; connecting each page to the REST API is the current task of the team (November 2026). We state this clearly so that the reader does not confuse the demonstration data with data coming from the database.
+Since 21 November 2026 every page reads and writes through the REST API; the front end keeps no course data of its own. A typed client (\code{frontend/app/lib/api.ts}) sends the token as a Bearer header, keeps it in the session storage of the browser so that a reload does not log the user out, and returns the user to the login page when the API answers 401. The role is the one stored in the account: there is no role switch in the interface. The demonstration accounts on the login page are ordinary accounts of the demonstration dataset and can be hidden with a configuration flag.
+
+Two endpoints were added for the interface: the class list of one session with each student's status (for the lecturer's attendance sheet) and the HCMUT periods of each session in the schedule. Student pages poll the session list every five seconds, so a PIN opened by the lecturer appears without a reload; the lecturer's sheet refreshes every three seconds while the PIN is open. The answer key was removed from the front end: quizzes come from the API and each answer is graded on the server. Only the competency map still shows illustrative values, because the knowledge tracing service belongs to phase 2.
 
 \subsection{Pilot Dataset: CO2003}
 \label{sec:dataset}

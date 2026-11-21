@@ -38,15 +38,15 @@ T9 & Check in after expiry & HTTP 410; PIN cleared & Passed\\
 T10 & Three wrong PINs in one session & The first two get 401 (one, then zero attempts left), the third gets 429 & Passed\\
 T11 & Check in twice with the correct PIN & Second gets HTTP 200 with \texttt{alreadyCheckedIn}; no duplicate record & Passed\\
 T12 & Student fetches quiz questions & No \code{correct_answer} field in the response & Passed\\
-T13 & Login with the sample lecturer and student accounts in the prototype & Role-specific home page is shown & Checked manually\\
-T14 & Switch between light and dark themes and reload & Theme is kept & Checked manually\\
-T15 & Open every course tab in the prototype & No error; screens render & Checked manually\\
-T16 & Open the quiz tab and take a quiz of one session & Questions appear; score shown at the end & Checked manually\\
+T13 & Login with the demonstration lecturer and student accounts through the API & Role-specific home page is shown & Passed (automated)\\
+T14 & Switch between light and dark themes and reload & Theme and login are kept & Passed (automated)\\
+T15 & Open every course tab of the lecturer & No error; screens render with API data & Passed (automated)\\
+T16 & A student takes the quiz of one session & Each answer graded by the API; score shown at the end & Passed (automated)\\
 T17 & Restart PostgreSQL while the API is serving requests & API stays up and reconnects; requests during the outage get HTTP 500 & Passed\\
 \end{tblr}
 \end{table}
 
-On 14 November 2026 the team ran the database tests T1--T5 directly in PostgreSQL and the API tests T6--T12 and T17 against the running system (PostgreSQL in Docker with the demonstration dataset), using a script of 51 API checks. Forty-five checks passed; the six failures correspond to features that are not implemented yet (manual attendance, per-session statistics, adding session materials, teaching periods in the timetable, and the endpoints that return the current user and his or her classes). Two defects found during this work were fixed: a correct PIN returned HTTP 500, and the API process stopped when the database restarted. The script is being turned into an automated suite that runs with \texttt{npm test}. We deliberately do not report performance figures: the target of NFR6 has not been measured.
+On 14 November 2026 the team ran the database tests T1--T5 directly in PostgreSQL and the API tests T6--T12 and T17 against the running system (PostgreSQL in Docker with the demonstration dataset), using a script of 51 API checks. Forty-five checks passed; the six failures correspond to features that are not implemented yet (manual attendance, per-session statistics, adding session materials, teaching periods in the timetable, and the endpoints that return the current user and his or her classes). Two defects found during this work were fixed: a correct PIN returned HTTP 500, and the API process stopped when the database restarted. On 21 November 2026, after the front end was connected and the missing endpoints were added, 50 of the 51 checks passed; the remaining failure is the endpoint for adding session materials, which is not implemented. The backend now has an automated integration suite (\texttt{npm test}, six scenarios on a separate test database: PIN check-in, expiry and the two-attempt lock, manual attendance, the session class list and periods, and concurrent class-list imports), and T13--T16 run automatically in a headless browser (\texttt{npm run test:ui}). Running the suite found one more defect, fixed the same day: manual attendance returned HTTP 500 because PostgreSQL could not infer the type of a query parameter. We deliberately do not report performance figures: the target of NFR6 has not been measured.
 
 \subsection{Evaluation Against Requirements}
 
@@ -58,24 +58,23 @@ Table~\ref{tab:coverage} summarizes the coverage of the use cases.
 \label{tab:coverage}
 \begin{tblr}{colspec={Q[l,1.2cm]X[l]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=3pt}
 UC & Done & Missing\\
-UC1 & Login and registration API; login page; course cards & Password reset; progress tracking of material views\\
-UC2 & Quiz screens; submission API storing one record per answer & Offline retry; resume; timer\\
+UC1 & Login and registration API; login page connected to the API; classes and sessions from the database & Password reset; progress tracking of material views\\
+UC2 & Quiz screens graded by the API; one record per answer & Offline retry; resume; timer\\
 UC3 & Schema supports questions with a skill & Authoring screen and API\\
 UC5 & Bulk and single creation; schedule API; timetable and sessions screens & Edit and delete; room-conflict check\\
-UC6 & Open, close, check-in, rate limit, expiry sweep, record & Manual marking; regenerate PIN\\
-UC7 & Summary API; statistics screen & Filters; export; threshold highlighting\\
+UC6 & Open, close, check-in, two-attempt lock, expiry sweep, manual marking, live class list & QR check-in\\
+UC7 & Summary API with per-session counts; statistics and participants screens & Filters; export; threshold highlighting\\
 \end{tblr}
 \end{table}
 
 \subsection{Limitations}
 
 \begin{enumerate}
-    \item The front end is not yet connected to the API; screens use demonstration data.
-    \item The CAS login page is a reproduction and does not authenticate with the real HCMUT service.
+    \item Login uses the system's own accounts; it does not authenticate with the real HCMUT CAS service.
     \item The PIN is stored in clear text in \code{attendance_code} while the window is open (it is cleared at close). This is acceptable for a value that lives one minute and is shown to the lecturer, but it means that anybody with read access to the database can read an active PIN. Hashing would not help because the lecturer must see the PIN.
     \item A four-digit PIN does not stop a present student from sharing it with an absent one (Section~\ref{sec:pin-security}).
     \item The question bank is in English while the interface is in Vietnamese; a bilingual bank is planned.
     \item The distribution of questions per skill is uneven (Table~\ref{tab:skills}).
     \item The room and slot of the sample timetable differ between the dataset and the demonstration data.
-    \item The automated test suite is not yet part of the repository, and performance has not been measured.
+    \item Performance has not been measured, and the competency map still shows illustrative values.
 \end{enumerate}
