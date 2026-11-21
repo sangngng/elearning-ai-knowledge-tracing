@@ -1,6 +1,18 @@
 {
   "name": "elearning-frontend",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
-  "dependencies": { "next": "14.2.15", "react": "18.3.1", "react-dom": "18.3.1" }
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test:ui": "node tests/T13-T16.mjs"
+  },
+  "dependencies": {
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
 }

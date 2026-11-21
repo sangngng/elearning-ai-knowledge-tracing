@@ -97,6 +97,58 @@ The summary endpoint computes, for each student, the number of attended sessions
 
 \code{POST /api/quizzes/:quizId/submit} receives the list of answers, loads the answer key on the server, compares, and inserts one \code{quiz_interactions} row per answer with the question, skill, session, correctness and attempt number. The learner-facing quiz endpoint never selects \code{correct_answer}.
 
+\subsection{API Design and Security}
+\label{sec:api-security}
+
+The back end exposes a JSON REST API over HTTP for local development. The browser sends a bearer token on protected requests, and the API uses HTTP status codes to distinguish invalid input, missing resources, forbidden operations, conflicts and expired attendance windows. Endpoints are organized by academic resource rather than by screen so that instructor and student views share the same class, session and attendance rules.
+
+\subsubsection{Endpoint Surface and Access Control}
+
+Table~\ref{tab:api-access} summarizes the main endpoints. Authentication is required except for registration, login and the health check. A role check is only the first boundary: routes that change a class or session also verify that the instructor is assigned to that class. Student reads and check-ins require an active enrollment row. These resource-level checks prevent a valid token from being used against an unrelated class.
+
+\begin{table}[H]
+\centering
+\caption{Main API endpoints and authorization}
+\label{tab:api-access}
+\begin{tblr}{colspec={Q[l,2.1cm]Q[l,5.6cm]X[l]}, row{1}={font=\bfseries}, hline{1,Z}={0.8pt}, hline{2}={0.4pt}, rowsep=2pt, rows={font=\footnotesize}}
+Method & Path & Access and purpose\\
+POST & \code{/api/auth/register}, \code{/api/auth/login} & Public; create a student account or obtain a JWT.\\
+GET & \code{/api/me} & Authenticated user; return only the caller's profile.\\
+GET & \code{/api/classes}, \code{/api/schedule} & Authenticated; return classes taught by an instructor or enrolled by a student, and their sessions.\\
+POST & \code{/api/classes/:id/enrollments/import} & Assigned instructor or admin; import the university roster by e-mail.\\
+GET/POST & \code{/api/classes/:id/sessions} & Enrolled student reads; assigned instructor creates sessions.\\
+POST & \code{/api/sessions/:id/attendance/open}, \code{.../close} & Assigned instructor or admin; manage the short-lived PIN window.\\
+POST & \code{/api/sessions/:id/attendance/check-in} & Enrolled student; submit a four-digit PIN.\\
+PUT & \code{/api/sessions/:id/attendance/:userId} & Assigned instructor or admin; set present, absent, late or excused, with an optional note.\\
+GET & \code{/api/classes/:id/attendance/summary} & Assigned instructor or admin; read class, student and per-session statistics.\\
+GET/POST & \code{/api/sessions/:id/quizzes}, \code{/api/quizzes/:id/submit} & Authorized learner reads questions and submits answers.\\
+\end{tblr}
+\end{table}
+
+The authentication middleware verifies the JWT signature and expiry before attaching the user identifier and role to the request. Tokens are signed with an environment-provided secret and expire after one day, following the JWT claim model~\cite{rfc7519}. Registration hashes passwords with bcrypt instead of storing the submitted password~\cite{provos1999bcrypt}. Public registration always creates a student; instructor and administrator accounts are provisioned separately. The profile endpoint reads the caller's current database fields, and academic routes check class ownership or enrollment against PostgreSQL.
+
+\subsubsection{Input Validation and Database Integrity}
+
+Route handlers validate identifiers as UUIDs, PINs as exactly four decimal digits, session numbers against the supported range, and dates and times before issuing SQL. The class-list import accepts between one and 500 e-mail addresses, normalizes case and whitespace, and removes duplicates. It runs in a transaction: if the import exceeds class capacity, the transaction rolls back and no partial roster remains. Request values are passed as SQL parameters rather than interpolated into query text.
+
+The class-capacity trigger locks the class row before counting active enrollments. Parallel imports therefore serialize at the database boundary, including requests handled by separate API processes. A unique constraint on \code{(class\_id, user\_id)} prevents duplicate enrollment records, while the trigger enforces capacity under concurrency. Other database constraints protect session numbers, valid time ranges, four-digit attendance codes, attendance status values and one attendance row per student/session~\cite{postgresdocs}. Transactions are used for bulk session creation, roster import and PIN check-in so each operation commits completely or leaves no partial state.
+
+\subsubsection{Attendance and Quiz Protections}
+
+Attendance PINs are generated with a cryptographic random-number API and compared with a timing-safe comparison. The default PIN window is one minute. The check-in transaction takes an advisory lock for the session/student pair before counting failed attempts; the first two incorrect attempts are recorded and the next request is locked out. This makes the attempt limit reliable when requests arrive concurrently. A successful PIN check-in is recorded as \emph{present}; lateness, absence and excused status are lecturer decisions made through the manual attendance endpoint. The database unique key prevents a second attendance row for the same student and session.
+
+The manual attendance endpoint checks the instructor's ownership of the session and verifies that the target student is enrolled in its class. It writes \code{method = manual}, stores the optional note and updates an earlier PIN or manual record instead of creating a duplicate. The attendance summary is restricted to the assigned instructor or an administrator. It reports present, late, absent and excused counts for each session. For a completed session, an enrolled student without a record contributes to the absent count; an upcoming session without a record does not. Excused students are excluded from the attendance-rate denominator.
+
+Quiz questions are selected without the answer-key column. Correctness is computed inside the submission route, then the per-answer result and skill identifier are written to \code{quiz\_interactions}. This keeps the answer key out of student responses while retaining the telemetry needed by later knowledge-tracing work.
+
+\subsubsection{Operational Security and Remaining Limits}
+
+The CORS allowlist is configured through \code{CORS\_ORIGIN}; its default is for local development. The PostgreSQL pool has a connection timeout and listeners for idle-client and checked-out-client errors, so a database restart fails individual requests rather than terminating the API process. Application containers receive the database URL and JWT secret through environment variables. Compose includes a development fallback secret; any shared deployment must provide a private secret and must not reuse that fallback.
+
+The current prototype is not an Internet deployment. Local HTTP does not provide transport encryption, and the project has not implemented refresh-token revocation, account lockout for password guessing, or a general request-rate limit. PIN throttling is specific to a student/session pair. The active PIN is stored in clear text while its short window is open because the instructor must display it; it is cleared on close or expiry. Deployment outside the trusted local environment therefore requires HTTPS, production secret management, broader authentication throttling and a backup policy. These limits distinguish the protections implemented for the demonstration from a complete production security program.
+
+The frontend lockfile was checked with \code{npm audit} on 18 November 2026. It reports one critical and one high-severity advisory: the pinned Next.js 14.2.15 is within the published affected range for remote code execution on Windows-hosted servers, and its PostCSS 8.4.31 dependency is within an affected range for source-map file disclosure when processing attacker-controlled CSS~\cite{next2026windowsrce,postcss2026fileread}. These findings predate the UI test dependency added for T13--T16. The project does not accept user-supplied CSS and the demo is intended to run locally, but the current frontend must not be exposed as a public service. The package audit identifies a framework-major upgrade as the available complete fix; this change is kept separate from the pre-demo backend work because it can alter the frontend build and needs its own review and regression run.
+
 \subsection{Front-End Implementation}
 
 \subsubsection{Design System}

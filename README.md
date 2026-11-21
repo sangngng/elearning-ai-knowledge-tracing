@@ -14,7 +14,7 @@ Nền tảng quản lý học tập (LMS) theo phong cách BKeL của ĐH Bách 
 Yêu cầu: **Docker Desktop** (chờ dòng "Engine running") và **Node.js LTS**.
 
 1. Nhấp đúp `scripts\start-dev.bat`. File này bật PostgreSQL và Adminer, tạo `.env`, cài thư viện, mở backend và frontend, rồi mở trình duyệt.
-2. Nhấp đúp `scripts\load-demo-data.bat` để nạp dữ liệu mẫu (chạy một lần vào database trống).
+2. Nhấp đúp `scripts\load-demo-data.bat` để nạp nhanh dữ liệu minh họa, hoặc dùng seed chính thức: `cd backend && npm ci && npm run seed`.
 3. Xem database: `http://localhost:8081/?pgsql=postgres&username=postgres&db=elearning`, mật khẩu `postgres`.
 
 | Cổng | Dịch vụ | Địa chỉ |
@@ -48,7 +48,7 @@ npm run dev
 
 Docker compose có ba nhóm dịch vụ:
 - Mặc định: `postgres`, `adminer`.
-- `--profile app`: backend và frontend dạng container (cần Dockerfile, nhiệm vụ S1-4).
+- `--profile app`: backend và frontend dạng container. Chạy `docker compose --profile app up -d --build`.
 - `--profile ai`: dịch vụ AI (chưa có Dockerfile; hiện chạy bằng `python ai_service/api/main.py`).
 
 ## 3. Tài khoản và dữ liệu mẫu
@@ -60,7 +60,7 @@ Môn đang triển khai đầu tiên là CO2003 (Cấu trúc dữ liệu và Gi�
 | Giảng viên | a.nguyen@hcmut.edu.vn |
 | Sinh viên | b.nguyen@hcmut.edu.vn (và c.tran, d.le, e.pham, f.hoang, g.vu, h.do, k.ngo cùng đuôi @hcmut.edu.vn) |
 
-Đây là dữ liệu tạm. Script seed chính thức là nhiệm vụ S1-3. Giao diện web hiện vẫn dùng dữ liệu tĩnh; việc nối API là nhiệm vụ S1-1.
+Lệnh seed chính thức là `cd backend && npm run seed`; xem `backend/README.md`. Giao diện web hiện vẫn dùng dữ liệu minh họa tĩnh; kết nối giao diện với API là nhiệm vụ S1-1.
 
 ## 4. Kiến trúc và cấu trúc thư mục
 
