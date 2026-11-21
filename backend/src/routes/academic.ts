@@ -91,6 +91,17 @@ academicRouter.get('/api/classes', async (req: AuthRequest, res, next) => {
   } catch (error) { return next(error) }
 })
 
+// HCMUT periods (docs/data/periods.json): period n runs from 06:00 + (n - 1) hours for 50 minutes,
+// periods 1 to 12. A session that does not start and end on period boundaries gets null periods.
+const PERIOD_SQL = `CASE WHEN extract(minute FROM cs.start_time) = 0 AND extract(minute FROM cs.end_time) = 50
+                      AND extract(hour FROM cs.start_time) BETWEEN 6 AND 17
+                      AND extract(hour FROM cs.end_time) BETWEEN 6 AND 17
+                    THEN (extract(hour FROM cs.start_time) - 5)::integer END AS period_start,
+              CASE WHEN extract(minute FROM cs.start_time) = 0 AND extract(minute FROM cs.end_time) = 50
+                      AND extract(hour FROM cs.start_time) BETWEEN 6 AND 17
+                      AND extract(hour FROM cs.end_time) BETWEEN 6 AND 17
+                    THEN (extract(hour FROM cs.end_time) - 5)::integer END AS period_end,`
+
 // A learner sees enrolled classes, while instructors see the classes they teach.
 academicRouter.get('/api/schedule', async (req: AuthRequest, res, next) => {
   try {
@@ -101,6 +112,7 @@ academicRouter.get('/api/schedule', async (req: AuthRequest, res, next) => {
     const result = await pool.query(
       `SELECT cs.id AS session_id, cs.session_number, cs.title AS session_title,
               cs.session_date, cs.start_time, cs.end_time, cs.room,
+              ${PERIOD_SQL}
               cc.id AS class_id, cc.class_code, cc.default_room, cc.semester_id,
               c.id AS course_id, c.title AS course_title,
               u.id AS instructor_id, u.name AS instructor_name,
@@ -405,6 +417,36 @@ academicRouter.put('/api/sessions/:sessionId/attendance/:userId', requireRoles('
     )
     if (!result.rowCount) return res.status(404).json({ error: 'Session or enrolled student not found, or session not assigned to you' })
     return res.json({ attendance: result.rows[0] })
+  } catch (error) { return next(error) }
+})
+
+// Roster of one session with each student's status, for the lecturer's attendance sheet.
+// A student without a record has status null ("not checked in yet").
+academicRouter.get('/api/sessions/:sessionId/attendance', requireRoles('instructor', 'admin'), async (req: AuthRequest, res, next) => {
+  try {
+    const sessionId = routeParam(req.params.sessionId)
+    if (!uuidPattern.test(sessionId)) return res.status(400).json({ error: 'sessionId must be a UUID' })
+    const session = await pool.query(
+      `SELECT cs.id, cs.class_id, cs.session_number, cs.title,
+              (cs.is_attendance_open AND cs.attendance_expires_at > now()) AS is_attendance_open,
+              CASE WHEN cs.attendance_expires_at > now() THEN cs.attendance_code END AS attendance_code,
+              CASE WHEN cs.attendance_expires_at > now() THEN cs.attendance_expires_at END AS attendance_expires_at
+       FROM course_sessions cs JOIN course_classes cc ON cc.id = cs.class_id
+       WHERE cs.id = $1 AND ($2 = 'admin' OR cc.instructor_id = $3)`,
+      [sessionId, req.user!.role, req.user!.id],
+    )
+    if (!session.rowCount) return res.status(404).json({ error: 'Session not found or not assigned to you' })
+    const roster = await pool.query(
+      `SELECT u.id AS user_id, u.name, u.email, ar.status, ar.method, ar.checkin_time, ar.note,
+              (SELECT count(*) FROM attendance_pin_attempts pa
+               WHERE pa.session_id = $1 AND pa.user_id = u.id AND NOT pa.succeeded)::integer AS failed_pin_attempts
+       FROM enrollments e JOIN users u ON u.id = e.user_id
+       LEFT JOIN attendance_records ar ON ar.session_id = $1 AND ar.user_id = u.id
+       WHERE e.class_id = $2 AND e.status = 'enrolled'
+       ORDER BY u.name`,
+      [sessionId, session.rows[0].class_id],
+    )
+    return res.json({ session: session.rows[0], students: roster.rows })
   } catch (error) { return next(error) }
 })
 

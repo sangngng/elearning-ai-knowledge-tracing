@@ -9,19 +9,35 @@ const FEATURES = [
   { icon: 'target', text: 'Lộ trình học thích ứng và bài tập rèn luyện cá nhân hóa' },
 ];
 
+// Accounts created by the demo seed (scripts/demo_seed_CO2003.sql or `npm run seed`).
+// Hide the shortcuts in a real deployment with NEXT_PUBLIC_DEMO_ACCOUNTS=false.
+const DEMO_PASSWORD = 'Demo@2026';
+const DEMO_ACCOUNTS = process.env.NEXT_PUBLIC_DEMO_ACCOUNTS === 'false' ? [] : [
+  { email: 'b.nguyen@hcmut.edu.vn', role: 'Sinh viên', name: 'Nguyen Van B', icon: 'grades' },
+  { email: 'a.nguyen@hcmut.edu.vn', role: 'Giảng viên', name: 'Nguyen Van A', icon: 'users' },
+];
+
 export default function Auth({ onLogin }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const submit = (e) => {
-    e.preventDefault();
+  const signIn = async (e, p) => {
     if (loading) return;
     setLoading(true);
-    const u = username.toLowerCase();
-    const role = u.includes('gv') || u.includes('admin') ? 'instructor' : 'student';
-    window.setTimeout(() => onLogin(role), 650);
+    setError('');
+    try {
+      await onLogin(e.trim(), p);
+    } catch (err) {
+      setError(err.status === 401 ? 'Email hoặc mật khẩu không đúng.' : err.message);
+      setLoading(false);
+    }
+  };
+  const submit = (e) => {
+    e.preventDefault();
+    signIn(email, password);
   };
 
   return (
@@ -76,12 +92,12 @@ export default function Auth({ onLogin }) {
 
           <form onSubmit={submit}>
             <div className="field">
-              <label htmlFor="u">Tên đăng nhập / MSSV</label>
+              <label htmlFor="u">Email HCMUT</label>
               <div className="input-wrap">
                 <span className="lead"><Icon name="user" size={18} /></span>
                 <input
-                  id="u" className="input has-lead" placeholder="Ví dụ: 2110001 hoặc gv_nguyenvana"
-                  value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required
+                  id="u" className="input has-lead" type="email" placeholder="ten.ho@hcmut.edu.vn"
+                  value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required
                 />
               </div>
             </div>
@@ -100,28 +116,30 @@ export default function Auth({ onLogin }) {
               </div>
             </div>
 
-            <div className="auth-row">
-              <label className="check"><input type="checkbox" defaultChecked /> Ghi nhớ đăng nhập</label>
-              <a href="#forgot" onClick={(e) => e.preventDefault()}>Quên mật khẩu?</a>
-            </div>
+            {error && (
+              <div className="callout bad" role="alert" style={{ marginBottom: 14 }}>
+                <Icon name="alert" size={18} /> <span>{error}</span>
+              </div>
+            )}
 
             <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={loading}>
               {loading ? <><span className="spinner" /> Đang xác thực…</> : <>Đăng nhập <Icon name="arrow-right" size={18} /></>}
             </button>
           </form>
 
-          <div className="auth-divider">hoặc vào nhanh bằng tài khoản mẫu</div>
-
-          <div className="role-grid">
-            <button type="button" className="role-card" onClick={() => onLogin('student')}>
-              <i><Icon name="grades" size={20} /></i>
-              <div><b>Sinh viên</b><span>Nguyễn Văn B • 2110001</span></div>
-            </button>
-            <button type="button" className="role-card" onClick={() => onLogin('instructor')}>
-              <i><Icon name="users" size={20} /></i>
-              <div><b>Giảng viên</b><span>TS. Nguyễn Văn A</span></div>
-            </button>
-          </div>
+          {DEMO_ACCOUNTS.length > 0 && (
+            <>
+              <div className="auth-divider">hoặc vào nhanh bằng tài khoản demo</div>
+              <div className="role-grid">
+                {DEMO_ACCOUNTS.map((a) => (
+                  <button key={a.email} type="button" className="role-card" disabled={loading} onClick={() => signIn(a.email, DEMO_PASSWORD)}>
+                    <i><Icon name={a.icon} size={20} /></i>
+                    <div><b>{a.role}</b><span>{a.name} • {a.email}</span></div>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <p className="auth-legal">
             Cần hỗ trợ tài khoản? <a href="mailto:cti-cnit@hcmut.edu.vn">cti-cnit@hcmut.edu.vn</a>

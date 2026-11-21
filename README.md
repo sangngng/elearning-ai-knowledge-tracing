@@ -60,7 +60,7 @@ Môn đang triển khai đầu tiên là CO2003 (Cấu trúc dữ liệu và Gi�
 | Giảng viên | a.nguyen@hcmut.edu.vn |
 | Sinh viên | b.nguyen@hcmut.edu.vn (và c.tran, d.le, e.pham, f.hoang, g.vu, h.do, k.ngo cùng đuôi @hcmut.edu.vn) |
 
-Lệnh seed chính thức là `cd backend && npm run seed`; xem `backend/README.md`. Giao diện web hiện vẫn dùng dữ liệu minh họa tĩnh; kết nối giao diện với API là nhiệm vụ S1-1.
+Lệnh seed chính thức là `cd backend && npm run seed`; xem `backend/README.md`. Giao diện web lấy toàn bộ dữ liệu từ API (xem `frontend/README.md`); `scripts\load-demo-data.bat` nạp thêm lịch sử điểm danh 11 buổi đã học để trang thống kê có số liệu.
 
 ## 4. Kiến trúc và cấu trúc thư mục
 

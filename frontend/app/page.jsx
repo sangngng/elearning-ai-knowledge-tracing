@@ -1,45 +1,34 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Auth from './components/Auth';
 import Shell from './components/Shell';
 import Course from './components/Course';
 import { DashboardView, HomeView, MyCoursesView } from './components/views';
 import { PinModal, QuizModal, Toasts } from './components/Modals';
-import { ENROLLED_STUDENTS } from './data/dsaCourseData';
+import { api, getToken, onUnauthorized, roleLabel, setToken } from './lib/api';
 
-const USERS = {
-  instructor: { role: 'instructor', name: 'TS. Nguyễn Văn A', code: 'CB001001', title: 'Giảng viên', email: 'a.nguyen@hcmut.edu.vn' },
-  student: { role: 'student', name: 'Nguyễn Văn B', code: '2110001', title: 'Sinh viên', email: 'b.nguyen@hcmut.edu.vn' },
-};
-
-const PIN_TTL = 60; // 1 phút
-const PIN_MAX_ATTEMPTS = 2;
-const ME_ID = '2110001';
-
-const randomPin = () => String(Math.floor(1000 + Math.random() * 9000));
+/** API user -> the fields the layout shows. */
+function toViewUser(u) {
+  return { ...u, title: roleLabel(u.role), code: String(u.email || '').split('@')[0] };
+}
 
 export default function Portal() {
+  const [booting, setBooting] = useState(true);
   const [user, setUser] = useState(null);
+  const [classes, setClasses] = useState([]);
+  const [schedule, setSchedule] = useState([]);
+  const [loadError, setLoadError] = useState('');
+  const [activeClassId, setActiveClassId] = useState(null);
+
   const [view, setView] = useState('home'); // home | dashboard | my-courses | course
   const [courseTab, setCourseTab] = useState('sessions');
   const [theme, setTheme] = useState('light');
   const [search, setSearch] = useState('');
   const [courseFilter, setCourseFilter] = useState('all');
 
-  const [roster, setRoster] = useState(() =>
-    ENROLLED_STUDENTS.map((s, idx) => ({
-      ...s,
-      session3Status: idx === 0 ? 'absent' : idx === 4 ? 'late' : idx === 6 ? 'excused' : 'present',
-    }))
-  );
-
-  const [pin, setPin] = useState({ code: '8392', seconds: 285, active: true });
-  const attempts = useRef(0);
-  const [pinOpen, setPinOpen] = useState(false);
-  const [quizOpen, setQuizOpen] = useState(false);
-  const [quizSet, setQuizSet] = useState(null);
-  const openQuiz = (set = null) => { setQuizSet(set); setQuizOpen(true); };
+  const [pinSession, setPinSession] = useState(null); // session the student is checking in to
+  const [quizSession, setQuizSession] = useState(null); // session whose quiz is open
   const [toasts, setToasts] = useState([]);
 
   /* ---- theme ---- */
@@ -50,7 +39,7 @@ export default function Portal() {
     setTheme((t) => {
       const next = t === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      try { localStorage.setItem('bklms-theme', next); } catch { /* bỏ qua khi storage bị chặn */ }
+      try { localStorage.setItem('bklms-theme', next); } catch { /* storage blocked */ }
       return next;
     });
   }, []);
@@ -59,84 +48,96 @@ export default function Portal() {
   const toast = useCallback((text, tone = 'info') => {
     const id = Math.random().toString(36).slice(2);
     setToasts((t) => [...t, { id, text, tone }]);
-    window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
+    window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3600);
   }, []);
 
-  /* ---- PIN countdown ---- */
-  useEffect(() => {
-    if (!pin.active || pin.seconds <= 0) return undefined;
-    const id = window.setInterval(() => {
-      setPin((p) => (p.seconds > 0 ? { ...p, seconds: p.seconds - 1 } : p));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [pin.active, pin.seconds > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* ---- data shared by every page ---- */
+  const loadAcademic = useCallback(async () => {
+    try {
+      const [c, s] = await Promise.all([api.classes(), api.schedule()]);
+      setClasses(c.classes);
+      setSchedule(s.sessions);
+      setLoadError('');
+      setActiveClassId((cur) => (cur && c.classes.some((x) => x.class_id === cur) ? cur : c.classes[0]?.class_id ?? null));
+    } catch (error) {
+      setLoadError(error.message);
+    }
+  }, []);
+  const refreshSchedule = useCallback(async () => {
+    try { setSchedule((await api.schedule()).sessions); } catch { /* keep the last schedule */ }
+  }, []);
 
-  const generatePin = useCallback(() => {
-    attempts.current = 0;
-    setPin({ code: randomPin(), seconds: PIN_TTL, active: true });
-    toast('Đã tạo mã PIN mới, hiệu lực 1 phút', 'ok');
-  }, [toast]);
-
-  const submitPin = useCallback(
-    (code) => {
-      if (attempts.current >= PIN_MAX_ATTEMPTS) {
-        return { success: false, message: 'Bạn đã nhập sai 2 lần. Vui lòng báo giảng viên để được điểm danh thủ công.' };
-      }
-      if (!pin.active || pin.seconds <= 0) {
-        return { success: false, message: 'Phiên điểm danh đã hết hạn.' };
-      }
-      if (code === pin.code) {
-        setRoster((r) => r.map((s) => (s.studentId === ME_ID ? { ...s, session3Status: 'present' } : s)));
-        return { success: true, message: 'Điểm danh Buổi 3 thành công. Trạng thái: Có mặt.' };
-      }
-      attempts.current += 1;
-      const left = PIN_MAX_ATTEMPTS - attempts.current;
-      return { success: false, message: left > 0 ? `Mã PIN không đúng. Bạn còn ${left} lần thử.` : 'Bạn đã nhập sai 2 lần. Vui lòng liên hệ giảng viên.' };
-    },
-    [pin]
-  );
-
-  const setStatus = useCallback(
-    (studentId, status) => {
-      setRoster((r) => r.map((s) => (s.studentId === studentId ? { ...s, session3Status: status } : s)));
-    },
-    []
-  );
-
-  const login = (role) => {
-    setUser(USERS[role]);
-    setView('home');
-    setCourseTab('sessions');
-  };
-  const logout = () => {
+  const resetSession = useCallback(() => {
+    setToken(null);
     setUser(null);
+    setClasses([]);
+    setSchedule([]);
+    setActiveClassId(null);
     setView('home');
     setSearch('');
+    setPinSession(null);
+    setQuizSession(null);
+  }, []);
+
+  /* ---- restore a login after reload; drop it when the token expires ---- */
+  useEffect(() => {
+    onUnauthorized(() => {
+      resetSession();
+      toast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'bad');
+    });
+    if (!getToken()) { setBooting(false); return; }
+    api.me()
+      .then(async ({ user: u }) => { setUser(toViewUser(u)); await loadAcademic(); })
+      .catch(() => setToken(null))
+      .finally(() => setBooting(false));
+  }, [loadAcademic, resetSession, toast]);
+
+  const login = async (email, password) => {
+    const { user: u, token } = await api.login(email, password);
+    setToken(token);
+    setUser(toViewUser(u));
+    setView('home');
+    setCourseTab('sessions');
+    await loadAcademic();
   };
-  const openCourse = (tab = 'sessions') => {
+  const logout = () => resetSession();
+
+  const openCourse = (classId, tab = 'sessions') => {
+    if (classId) setActiveClassId(classId);
     setCourseTab(tab);
     setView('course');
     window.scrollTo({ top: 0 });
   };
 
+  if (booting) {
+    return <div className="boot"><span className="spinner" /> Đang tải…</div>;
+  }
   if (!user) return <Auth onLogin={login} />;
 
+  const activeClass = classes.find((c) => c.class_id === activeClassId) || null;
   const app = {
     user, view, setView, courseTab, setCourseTab, openCourse, theme, toggleTheme, logout,
-    search, setSearch, courseFilter, setCourseFilter, roster, pin, generatePin, submitPin, setStatus,
-    setPinOpen, setQuizOpen, quizSet, openQuiz, toast,
+    search, setSearch, courseFilter, setCourseFilter, toast,
+    classes, schedule, activeClass, loadError, reload: loadAcademic, refreshSchedule,
+    openPin: setPinSession, openQuiz: setQuizSession,
   };
 
   return (
     <>
       <Shell app={app}>
+        {loadError && (
+          <div className="callout bad" role="alert" style={{ marginBottom: 16 }}>
+            <span>{loadError}</span>
+            <button className="btn btn-sm" style={{ marginLeft: 'auto' }} onClick={loadAcademic}>Thử lại</button>
+          </div>
+        )}
         {view === 'home' && <HomeView app={app} />}
         {view === 'dashboard' && <DashboardView app={app} />}
         {view === 'my-courses' && <MyCoursesView app={app} />}
-        {view === 'course' && <Course app={app} />}
+        {view === 'course' && activeClass && <Course key={activeClass.class_id} app={app} cls={activeClass} />}
       </Shell>
-      {pinOpen && <PinModal app={app} />}
-      {quizOpen && <QuizModal app={app} />}
+      {pinSession && <PinModal app={app} session={pinSession} onClose={() => setPinSession(null)} />}
+      {quizSession && <QuizModal app={app} session={quizSession} onClose={() => setQuizSession(null)} />}
       <Toasts items={toasts} />
     </>
   );

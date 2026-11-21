@@ -3,20 +3,32 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { Avatar, Cover, useClickAway } from './ui';
+import { coverFor } from './views';
+import { dayName, fmtDate, hm, sessionWindow, splitCourseTitle } from '../lib/api';
 
 const NAV = [
   { id: 'home', label: 'Trang chủ', icon: 'home' },
   { id: 'dashboard', label: 'Bảng điều khiển', icon: 'layout' },
-  { id: 'my-courses', label: 'Khóa học của tôi', icon: 'book', count: 4 },
+  { id: 'my-courses', label: 'Khóa học của tôi', icon: 'book' },
 ];
 
-const NOTIFS = [
-  { icon: 'key', tone: 'tone-ok', title: 'Phiên điểm danh Buổi 3 đang mở', meta: 'CO2003 • Phòng B4-302 • vừa xong' },
-  { icon: 'quiz', tone: 'tone-info', title: 'Quiz Buổi 3 hết hạn lúc 23:59 hôm nay', meta: 'CO2003 • 3 câu hỏi' },
-];
+/** Sessions starting within the next 48 hours, shown as reminders. */
+function reminders(schedule) {
+  const now = Date.now();
+  return schedule
+    .filter((s) => { const t = sessionWindow(s).start.getTime(); return t >= now - 3 * 3600e3 && t <= now + 48 * 3600e3; })
+    .sort((a, b) => sessionWindow(a).start - sessionWindow(b).start)
+    .map((s) => ({
+      key: s.session_id,
+      icon: 'calendar', tone: 'tone-info',
+      title: `Buổi ${s.session_number}: ${s.session_title}`,
+      meta: `${splitCourseTitle(s.course_title).code || s.class_code} • ${dayName(s.session_date)} ${fmtDate(s.session_date)} ${hm(s.start_time)} • Phòng ${s.room || s.default_room}`,
+    }));
+}
 
 export default function Shell({ app, children }) {
-  const { user, view, setView, openCourse, theme, toggleTheme, logout, search, setSearch } = app;
+  const { user, view, setView, openCourse, theme, toggleTheme, logout, search, setSearch, classes, schedule, activeClass } = app;
+  const NOTIFS = reminders(schedule);
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [menu, setMenu] = useState(null); // 'user' | 'notif' | null
@@ -55,10 +67,11 @@ export default function Shell({ app, children }) {
   if (view === 'dashboard') crumbs.push({ label: 'Bảng điều khiển' });
   if (view === 'my-courses') crumbs.push({ label: 'Khóa học của tôi' });
   if (view === 'course') {
-    crumbs.push({ label: 'Khóa học của tôi', to: 'my-courses' }, { label: 'HK261' }, { label: 'CO2003 - CC01' });
+    crumbs.push({ label: 'Khóa học của tôi', to: 'my-courses' });
+    if (activeClass) crumbs.push({ label: activeClass.semester_code }, { label: `${splitCourseTitle(activeClass.course_title).code || activeClass.course_title} - ${activeClass.class_code}` });
   }
 
-  const isInstructor = user.role === 'instructor';
+  const isInstructor = user.role !== 'student';
 
   return (
     <div className={`shell ${collapsed ? 'collapsed' : ''} ${drawer ? 'drawer-open' : ''}`}>
@@ -82,19 +95,25 @@ export default function Shell({ app, children }) {
             >
               <Icon name={n.icon} size={20} />
               <span>{n.label}</span>
-              {n.count ? <em className="count" style={{ fontStyle: 'normal' }}>{n.count}</em> : null}
+              {n.id === 'my-courses' && classes.length ? <em className="count" style={{ fontStyle: 'normal' }}>{classes.length}</em> : null}
             </button>
           ))}
         </nav>
 
-        <div className="sb-section">Lớp đang học</div>
-        <button className={`sb-course ${view === 'course' ? 'active' : ''}`} onClick={() => { openCourse('sessions'); setDrawer(false); }} title="CO2003 - Cấu trúc Dữ liệu và Giải thuật">
-          <div className="thumb"><Cover tone="cyan" pattern="triangles" /></div>
-          <div>
-            <b>CO2003 • CC01</b>
-            <span>Cấu trúc Dữ liệu & Giải thuật</span>
-          </div>
-        </button>
+        <div className="sb-section">{isInstructor ? 'Lớp giảng dạy' : 'Lớp đang học'}</div>
+        {classes.map((c, i) => {
+          const { code, name } = splitCourseTitle(c.course_title);
+          const cover = coverFor(i);
+          return (
+            <button key={c.class_id} className={`sb-course ${view === 'course' && activeClass?.class_id === c.class_id ? 'active' : ''}`} onClick={() => { openCourse(c.class_id, 'sessions'); setDrawer(false); }} title={c.course_title}>
+              <div className="thumb"><Cover tone={cover.tone} pattern={cover.pattern} /></div>
+              <div>
+                <b>{code || 'Lớp'} • {c.class_code}</b>
+                <span>{name}</span>
+              </div>
+            </button>
+          );
+        })}
 
         <div className="sb-spacer" />
 
@@ -152,13 +171,13 @@ export default function Shell({ app, children }) {
             <div className="pop-anchor">
               <button className="icon-btn" onClick={() => setMenu(menu === 'notif' ? null : 'notif')} aria-label="Thông báo" aria-expanded={menu === 'notif'}>
                 <Icon name="bell" size={20} />
-                <span className="dot">{NOTIFS.length}</span>
+                {NOTIFS.length > 0 && <span className="dot">{NOTIFS.length}</span>}
               </button>
               {menu === 'notif' && (
                 <div className="popover" role="menu">
-                  <div className="pop-head"><b>Thông báo</b><span>{NOTIFS.length} mục cần chú ý</span></div>
+                  <div className="pop-head"><b>Thông báo</b><span>{NOTIFS.length ? `${NOTIFS.length} buổi học trong 48 giờ tới` : 'Không có buổi học nào trong 48 giờ tới'}</span></div>
                   {NOTIFS.map((n) => (
-                    <div className="notif" key={n.title}>
+                    <div className="notif" key={n.key}>
                       <i className={n.tone}><Icon name={n.icon} size={18} /></i>
                       <div><b>{n.title}</b><span>{n.meta}</span></div>
                     </div>
@@ -172,7 +191,7 @@ export default function Shell({ app, children }) {
                 <Avatar name={user.name} size="sm" />
                 <div style={{ textAlign: 'left' }}>
                   <b>{user.name}</b>
-                  <small>{isInstructor ? 'Giảng viên' : 'Sinh viên'}</small>
+                  <small>{user.title}</small>
                 </div>
                 <Icon name="chevron-down" size={14} className="chev" />
               </button>

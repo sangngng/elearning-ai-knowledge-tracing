@@ -45,3 +45,6 @@ report/*.out
 report/*.toc
 report/*.lof
 report/*.pdf
+
+# TypeScript incremental build cache
+*.tsbuildinfo

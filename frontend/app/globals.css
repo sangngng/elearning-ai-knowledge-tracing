@@ -794,3 +794,17 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   .toasts { left: 12px; right: 12px; }
   .toast { min-width: 0; max-width: none; }
 }
+
+/* ---- API-backed views ---- */
+.boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); }
+.tt2 { display: grid; grid-template-columns: 96px repeat(7, minmax(128px, 1fr)); grid-template-rows: auto repeat(12, minmax(52px, auto)); min-width: 1000px; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.tt2 > .th, .tt2 > .period, .tt2 > .cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.tt2 .th { background: var(--surface-2); text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); padding: 10px 6px; }
+.tt2 .th small { display: block; font-weight: 500; font-size: 11px; margin-top: 2px; }
+.tt2 .th.today { background: var(--primary-soft); color: var(--primary); }
+.tt2 .period { background: var(--surface-2); text-align: center; display: grid; align-content: center; font-weight: 700; font-size: 12.5px; padding: 6px; }
+.tt2 .period small { display: block; font-weight: 500; color: var(--muted); font-size: 10.5px; margin-top: 2px; }
+.tt2 .cell.today-col { background-color: color-mix(in srgb, var(--primary-soft) 40%, transparent); }
+.tt2 .slot { margin: 4px; z-index: 1; }
+.tt2 .slot.other { opacity: 0.75; }
+select.input { appearance: auto; padding-right: 12px; }

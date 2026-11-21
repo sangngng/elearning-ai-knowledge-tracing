@@ -15,7 +15,7 @@ Họp GVHD vào Chủ nhật, hai tuần một lần. Cập nhật lần cuối:
 | Báo cáo | 40 trang, 7 mục, 44 tài liệu tham khảo | Mốc 30/11 cần 50 trang, 15/12 cần 70 trang |
 | CSDL | 14 bảng, schema áp dụng sạch và chạy lại được (đã kiểm tra trên PostgreSQL) | Chưa có script seed |
 | Backend | Typecheck đạt; đăng ký, đăng nhập, lịch, buổi học, điểm danh PIN (1 phút, 2 lần nhập), quiz đã có; đã sửa lỗi check-in PIN trả 500 | Chưa có test tự động; chưa có `GET /api/me`, danh sách lớp của tôi |
-| Frontend | Build đạt; giao diện BKeL đầy đủ | Toàn bộ dữ liệu là tĩnh, chưa gọi API nào |
+| Frontend | Build đạt; mọi trang nối API (21/11); T13–T16 tự động | Bản đồ năng lực còn dữ liệu minh họa (chờ AI) |
 | Docker | Compose chạy được PostgreSQL | Chưa có Dockerfile cho backend và frontend |
 | Dữ liệu CO2003 | 15 buổi, 40 câu, 11 kỹ năng | Phân bố không đều: DSA-COMPLEXITY và DSA-RECURSION chỉ có 1 câu |
 | Sơ đồ | Use case, kiến trúc, hoạt động, ERD | Sơ đồ 01, 02, 04 còn nhắc bài giảng (lessons) cũ |
@@ -76,7 +76,7 @@ Quyết định: tích hợp AI chỉ bắt đầu khi hệ thống đủ UC1-UC
 
 | Rủi ro | Ảnh hưởng | Biện pháp | Phụ trách |
 |---|---|---|---|
-| Frontend vẫn dùng dữ liệu tĩnh | Demo không phải hệ thống thật | S1-1 là việc ưu tiên số một; cắt phần việc khác trước | Sang |
+| Đã xử lý 21/11: frontend nối API | — | — | Sang |
 | Chưa có Dockerfile | Không chạy được bằng một lệnh | S1-4, hạn 19/11 | Hào |
 | Ngân hàng câu hỏi lệch (2 kỹ năng chỉ có 1 câu) | Cản trở AI sau này và gây hỏi khi bảo vệ | S1-15: tối thiểu 4 câu mỗi kỹ năng | Tuấn |
 | Tài liệu tham khảo viết từ trí nhớ | Sai thông tin trích dẫn | S1-10: đối chiếu từng mục | Tuấn |

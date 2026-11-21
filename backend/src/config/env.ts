@@ -10,7 +10,8 @@ const required = (name: string, fallback?: string) => {
 
 export const env = {
   port: Number(process.env.PORT ?? 8080),
-  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://localhost:5173')
+  // Default: the Next.js dev server (3000) and the UI test server (frontend/tests, 3010).
+  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://localhost:3010')
     .split(',').map((origin) => origin.trim()).filter(Boolean),
   databaseUrl: required('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/elearning'),
   jwtSecret: required('JWT_SECRET'),

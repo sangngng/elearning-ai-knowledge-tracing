@@ -100,4 +100,21 @@ insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) v
 insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) values ('bbbbbbbb-bbbb-4bbb-8bbb-000000000014',(select id from skills where code='DSA-GRAPH'),'When is an adjacency list usually better than an adjacency matrix?','[{"id": "A", "text": "When the graph is sparse (few edges)"}, {"id": "B", "text": "When the number of vertices is very small"}, {"id": "C", "text": "When the graph is complete"}, {"id": "D", "text": "When edge lookup must be O(1) for every pair"}]'::jsonb,'A',5);
 insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) values ('bbbbbbbb-bbbb-4bbb-8bbb-000000000015',(select id from skills where code='DSA-HASH'),'What is a collision in a hash table?','[{"id": "A", "text": "The hash function returns a negative value"}, {"id": "B", "text": "Two different keys are hashed to the same position"}, {"id": "C", "text": "One key is hashed to two positions"}, {"id": "D", "text": "The hash table is completely full"}]'::jsonb,'B',1);
 insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) values ('bbbbbbbb-bbbb-4bbb-8bbb-000000000015',(select id from skills where code='DSA-HASH'),'How does collision handling by chaining work?','[{"id": "A", "text": "Find the next empty slot in the table"}, {"id": "B", "text": "Each slot of the table holds a linked list of elements with the same hash index"}, {"id": "C", "text": "Immediately double the table size"}, {"id": "D", "text": "Delete the old element"}]'::jsonb,'B',2);
-insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) values ('bbbbbbbb-bbbb-4bbb-8bbb-000000000015',(select id from skills where code='DSA-HASH'),'With a good hash function and a reasonable load factor, what is the average search complexity in a hash table?','[{"id": "A", "text": "O(n log n)"}, {"id": "B", "text": "O(1)"}, {"id": "C", "text": "O(log n)"}, {"id": "D", "text": "O(n)"}]'::jsonb,'B',3);
+insert into questions(quiz_id,skill_id,prompt,options,correct_answer,position) values ('bbbbbbbb-bbbb-4bbb-8bbb-000000000015',(select id from skills where code='DSA-HASH'),'With a good hash function and a reasonable load factor, what is the average search complexity in a hash table?','[{"id": "A", "text": "O(n log n)"}, {"id": "B", "text": "O(1)"}, {"id": "C", "text": "O(log n)"}, {"id": "D", "text": "O(n)"}]'::jsonb,'B',3);-- Attendance history for sessions 1-11 (held before 21/11/2026), so the statistics page has data.
+-- Deterministic: the same students are late, absent or excused every time the file is loaded.
+-- No record = absent (a finished session without a record counts as absent).
+insert into attendance_records(session_id,user_id,status,checkin_time,method,note)
+select cs.id, e.user_id, x.status,
+       case when x.status in ('present','late') then (cs.session_date + cs.start_time + make_interval(mins => x.minute)) at time zone 'Asia/Ho_Chi_Minh' end,
+       case when x.status = 'present' then 'pin' else 'manual' end,
+       case x.status when 'late' then 'Arrived after the PIN expired' when 'excused' then 'Medical certificate' end
+from course_sessions cs
+join enrollments e on e.class_id = cs.class_id and e.status = 'enrolled'
+cross join lateral (
+  select abs(hashtext(cs.session_number::text || e.user_id::text)) % 20 as r
+) h
+cross join lateral (
+  select case when h.r = 0 then 'absent' when h.r = 1 then 'late' when h.r = 2 then 'excused' else 'present' end as status,
+         case when h.r = 1 then 20 else 3 + h.r % 7 end as minute
+) x
+where cs.class_id = '55555555-5555-4555-8555-555555555555' and cs.session_number <= 11 and x.status <> 'absent';

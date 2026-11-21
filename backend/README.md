@@ -29,7 +29,7 @@ src/
 
 - `GET /api/me` — authenticated user's profile (`id`, `name`, `email`, `role`, `created_at`).
 - `GET /api/classes` — classes taught by the current instructor or enrolled by the current student, with course, semester, instructor, capacity, and enrolled count.
-- `GET /api/schedule?semesterId=<uuid>` — current user's enrolled/taught class sessions, ordered by date and time.
+- `GET /api/schedule?semesterId=<uuid>` — current user's enrolled/taught class sessions, ordered by date and time, with `my_attendance` and the HCMUT periods `period_start`/`period_end` (period n runs from 06:00 + (n − 1) h for 50 minutes; `null` when the times do not match the periods).
 - `GET /api/classes/:classId/sessions` — the class's numbered sessions and materials; PIN is visible only to its instructor/admin while active.
 - `POST /api/classes/:classId/enrollments/import` — instructor of the class (or admin) imports the class list from the university registration system, body `{ "emails": ["b.nguyen@hcmut.edu.vn", ...] }` (1–500). All or nothing; returns `added`, `alreadyEnrolled`, `notFound`. The database capacity trigger rejects an import that would exceed `max_capacity` (409), also under concurrent imports. Students cannot enroll themselves.
 - `POST /api/classes/:classId/sessions` — instructor creates one session (`sessionNumber` 1–15).
@@ -38,6 +38,7 @@ src/
 - `POST /api/sessions/:sessionId/attendance/close` — instructor closes check-in and clears the PIN.
 - `POST /api/sessions/:sessionId/attendance/check-in` — enrolled student body: `{ "attendanceCode": "4829" }`. Two attempts per student and session: a wrong PIN returns 401 with `attemptsLeft`; after two wrong PINs the student gets 429 and the lecturer records attendance manually. The PIN expires at the database expiry time.
 - `PUT /api/sessions/:sessionId/attendance/:userId` — assigned instructor/admin records `{ "status": "present|absent|late|excused", "note": "..." }`. Only enrolled students can be marked; an existing PIN or manual record is updated in place.
+- `GET /api/sessions/:sessionId/attendance` — assigned instructor/admin: the session (with the PIN while it is open) and every enrolled student's `status` (`null` = not checked in), `method`, `checkin_time`, `note` and `failed_pin_attempts`.
 - `GET /api/classes/:classId/attendance/summary` — instructor view of capacity, enrolled count, completed sessions, overall/per-student rates, and `sessions` (counts and rate for each numbered session). A completed session without a record counts as absent; an upcoming session without a record does not. Excused students are excluded from the rate denominator.
 - `GET /api/sessions/:sessionId/quizzes` — published session quiz/questions; never returns `correct_answer`.
 - `POST /api/auth/register`, `POST /api/auth/login` — account creation and login.

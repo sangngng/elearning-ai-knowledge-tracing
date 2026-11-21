@@ -179,6 +179,32 @@ test('manual attendance updates the record and the summary includes per-session 
   assert.equal(summary.payload.summary.sessions[0].attendanceRatePercent, 50)
 })
 
+test('session roster shows statuses and locked PIN attempts; schedule maps times to periods', async () => {
+  const roster = await request(`/api/sessions/${sessionIds[0]}/attendance`, users[0])
+  assert.equal(roster.response.status, 200)
+  assert.equal(roster.payload.session.session_number, 1)
+  const marked = roster.payload.students.find((s: { user_id: string }) => s.user_id === users[1].id)
+  assert.equal(marked.status, 'late')
+  assert.equal(marked.method, 'manual')
+  const unmarked = roster.payload.students.find((s: { user_id: string }) => s.user_id === users[2].id)
+  assert.equal(unmarked.status, null)
+
+  const lockedRoster = await request(`/api/sessions/${sessionIds[2]}/attendance`, users[0])
+  const locked = lockedRoster.payload.students.find((s: { user_id: string }) => s.user_id === users[2].id)
+  assert.equal(locked.failed_pin_attempts, 2)
+
+  const asStudent = await request(`/api/sessions/${sessionIds[0]}/attendance`, users[1])
+  assert.equal(asStudent.response.status, 403)
+
+  const schedule = await request('/api/schedule', users[1])
+  assert.equal(schedule.response.status, 200)
+  assert.ok(schedule.payload.sessions.length >= 3)
+  for (const session of schedule.payload.sessions) {
+    assert.equal(session.period_start, 2)
+    assert.equal(session.period_end, 4)
+  }
+})
+
 test('six simultaneous class-list imports cannot exceed the last seat', async () => {
   const attempts = await Promise.all(users.slice(1).map((student) => request(
     `/api/classes/${capacityClassId}/enrollments/import`,
