@@ -1,0 +1,124 @@
+{
+  "institution": "Ho Chi Minh City University of Technology (HCMUT)",
+  "period_length_minutes": 50,
+  "break_minutes": 10,
+  "first_period_start": "06:00",
+  "periods": [
+    {
+      "period_no": 1,
+      "label_vi": "Tiết 1",
+      "start_time": "06:00",
+      "end_time": "06:50",
+      "session": "morning",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 2,
+      "label_vi": "Tiết 2",
+      "start_time": "07:00",
+      "end_time": "07:50",
+      "session": "morning",
+      "status": "confirmed_by_sessions_json"
+    },
+    {
+      "period_no": 3,
+      "label_vi": "Tiết 3",
+      "start_time": "08:00",
+      "end_time": "08:50",
+      "session": "morning",
+      "status": "confirmed_by_sessions_json"
+    },
+    {
+      "period_no": 4,
+      "label_vi": "Tiết 4",
+      "start_time": "09:00",
+      "end_time": "09:50",
+      "session": "morning",
+      "status": "confirmed_by_sessions_json"
+    },
+    {
+      "period_no": 5,
+      "label_vi": "Tiết 5",
+      "start_time": "10:00",
+      "end_time": "10:50",
+      "session": "morning",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 6,
+      "label_vi": "Tiết 6",
+      "start_time": "11:00",
+      "end_time": "11:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 7,
+      "label_vi": "Tiết 7",
+      "start_time": "12:00",
+      "end_time": "12:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 8,
+      "label_vi": "Tiết 8",
+      "start_time": "13:00",
+      "end_time": "13:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 9,
+      "label_vi": "Tiết 9",
+      "start_time": "14:00",
+      "end_time": "14:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 10,
+      "label_vi": "Tiết 10",
+      "start_time": "15:00",
+      "end_time": "15:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 11,
+      "label_vi": "Tiết 11",
+      "start_time": "16:00",
+      "end_time": "16:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    },
+    {
+      "period_no": 12,
+      "label_vi": "Tiết 12",
+      "start_time": "17:00",
+      "end_time": "17:50",
+      "session": "afternoon",
+      "status": "derived_from_pattern"
+    }
+  ],
+  "pending_periods": "13-17 (evening) not included: break pattern not verified. Add after checking the official school notice or MyBK.",
+  "sources": [
+    {
+      "title": "Giờ học mới của SV Bách khoa: hiểu sao cho đúng?",
+      "publisher": "HCMUT OISP news",
+      "url": "https://oisp.hcmut.edu.vn/tin-tuc/gio-hoc-moi-cua-sv-bach-khoa-hieu-sao-cho-dung.html",
+      "note": "Notice about the new teaching time frame (from HK182); official table must be checked against the original notice"
+    },
+    {
+      "title": "Chuyện lưu giờ học theo tiết khi làm app thời khóa biểu cho sinh viên",
+      "publisher": "Viblo (YourCampus)",
+      "url": "https://viblo.asia/p/chuyen-luu-gio-hoc-theo-tiet-khi-lam-app-thoi-khoa-bieu-cho-sinh-vien-QyJKzB894Me",
+      "note": "Secondary source: HCMUT period 1 starts 06:00, 50 minutes per period",
+      "accessed": "2026-11-21"
+    },
+    {
+      "title": "docs/data/dsa_co2003_sessions_en.json",
+      "note": "All 15 sessions use Periods 2-4 = 07:00-09:50, consistent with this table"
+    }
+  ]
+}
