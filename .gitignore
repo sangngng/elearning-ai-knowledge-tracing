@@ -48,3 +48,6 @@ report/*.pdf
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+# LaTeX build files
+*.fdb_latexmk
+*.fls
