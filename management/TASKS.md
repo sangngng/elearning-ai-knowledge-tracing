@@ -9,13 +9,15 @@ Trạng thái: `todo`, `doing`, `review`, `done`. Bảng được rà vào vào 
 
 | ID | Nhiệm vụ | Hạn | Kết quả nộp | Tiêu chí chấp nhận | Trạng thái |
 |---|---|---|---|---|---|
-| S1-3 | Script seed CO2003 từ `docs/data/*.json`: 1 giảng viên, 8 sinh viên, 1 lớp, 15 buổi, 11 kỹ năng, 40 câu hỏi, mật khẩu băm bcrypt | 17/11 | `backend/db/seed.ts` (hoặc `seed.sql`) và lệnh `npm run seed` | Chạy hai lần cho cùng kết quả; sau seed đăng nhập được bằng tài khoản mẫu | todo |
-| S1-14 | Thêm `GET /api/me` và `GET /api/classes` (lớp của tôi, kèm sĩ số) cho frontend | 17/11 | Hai endpoint, tài liệu trong `backend/README.md` | Sinh viên thấy lớp đã ghi danh, giảng viên thấy lớp đang dạy; có test | todo |
-| S1-5 | Chạy thật test case T13-T16 và ghi kết quả | 18/11 | `docs/testing/T13-T16.md` kèm log hoặc ảnh | Mỗi case có kết quả Đạt/Không đạt và bằng chứng | todo |
-| S1-4 | Dockerfile cho backend và frontend; `docker compose --profile app up` chạy được | 19/11 | Hai Dockerfile, compose chạy | Từ máy sạch, một lệnh lên đủ DB, API, giao diện; `/health` trả `ok` | todo |
-| S1-6 | Test tự động cho điểm danh PIN: khóa sau 2 lần sai, PIN hết hạn, check-in trùng | 19/11 | Thư mục test và báo cáo đạt/không đạt | `npm test` chạy được; 3 kịch bản đều đạt | todo |
-| S1-7 | Test đồng thời cho trigger sĩ số lớp (nhiều yêu cầu ghi danh cùng lúc) | 20/11 | Script và kết quả | Không vượt `max_capacity` dù chạy song song | todo |
-| S1-12 | Viết mục API và bảo mật cho báo cáo (endpoint, xác thực, rate limit, trigger) | 21/11 | 3-4 trang, Markdown hoặc LaTeX | Số liệu khớp mã nguồn hiện tại | todo |
+| S1-3 | Script seed CO2003 từ `docs/data/*.json`: 1 giảng viên, 8 sinh viên, 1 lớp, 15 buổi, 11 kỹ năng, 40 câu hỏi, mật khẩu băm bcrypt | 17/11 | `backend/db/seed.ts` (hoặc `seed.sql`) và lệnh `npm run seed` | Chạy hai lần cho cùng kết quả; sau seed đăng nhập được bằng tài khoản mẫu | doing |
+| S1-14 | Thêm `GET /api/me` và `GET /api/classes` (lớp của tôi, kèm sĩ số) cho frontend | 17/11 | Hai endpoint, tài liệu trong `backend/README.md` | Sinh viên thấy lớp đã ghi danh, giảng viên thấy lớp đang dạy; có test | doing |
+| S1-5 | Chạy thật test case T13-T16 và ghi kết quả | 18/11 | `docs/testing/T13-T16.md` kèm log hoặc ảnh | Mỗi case có kết quả Đạt/Không đạt và bằng chứng | review |
+| S1-4 | Dockerfile cho backend và frontend; `docker compose --profile app up` chạy được | 19/11 | Hai Dockerfile, compose chạy | Từ máy sạch, một lệnh lên đủ DB, API, giao diện; `/health` trả `ok` | doing |
+| S1-6 | Test tự động cho điểm danh PIN: khóa sau 2 lần sai, PIN hết hạn, check-in trùng | 19/11 | Thư mục test và báo cáo đạt/không đạt | `npm test` chạy được; 3 kịch bản đều đạt | doing |
+| S1-7 | Test đồng thời cho trigger sĩ số lớp (nhiều yêu cầu ghi danh cùng lúc) | 20/11 | Script và kết quả | Không vượt `max_capacity` dù chạy song song | doing |
+| S1-12 | Viết mục API và bảo mật cho báo cáo (endpoint, xác thực, rate limit, trigger) | 21/11 | 3-4 trang, Markdown hoặc LaTeX | Số liệu khớp mã nguồn hiện tại | review |
+| S1-19 | API giảng viên điểm danh thủ công: `PUT /api/sessions/:sessionId/attendance/:userId`, trạng thái `present`, `absent`, `late`, `excused`, ghi chú và `method=manual` | 19/11 | Endpoint, tài liệu, kiểm thử | Chỉ giảng viên lớp gọi được; sinh viên ngoài lớp bị từ chối; có thể sửa trạng thái | doing |
+| S1-20 | Bổ sung thống kê chuyên cần theo từng buổi: có mặt, muộn, vắng, có phép và tỷ lệ cho biểu đồ 15 buổi | 20/11 | Mảng `sessions` trong attendance summary | Số liệu khớp `attendance_records`; buổi hoàn thành chưa có bản ghi được tính vắng | doing |
 
 ### Tuấn (Yêu cầu, dữ liệu, tài liệu)
 

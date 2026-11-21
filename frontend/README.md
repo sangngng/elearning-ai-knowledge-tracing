@@ -17,6 +17,10 @@ npm run dev                    # http://localhost:3000
 
 Nếu cổng 3000 đang bận: `npm run dev -- -p 3001` (thêm `http://localhost:3001` vào `CORS_ORIGIN` của backend).
 
+## Kiểm tra giao diện
+
+`npm run test:ui` chạy lại T13–T16 bằng Microsoft Edge và Playwright Core; kết quả và ảnh chụp được lưu trong `../docs/testing/`. Cần cài Edge và chạy lệnh từ thư mục `frontend/`.
+
 ## Cấu trúc
 
 ```text

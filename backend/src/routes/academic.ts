@@ -52,6 +52,45 @@ async function classExists(classId: string) {
 
 academicRouter.use(authenticate)
 
+academicRouter.get('/api/me', async (req: AuthRequest, res, next) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, role, created_at FROM users WHERE id = $1',
+      [req.user!.id],
+    )
+    if (!result.rowCount) return res.status(404).json({ error: 'User not found' })
+    return res.json({ user: result.rows[0] })
+  } catch (error) { return next(error) }
+})
+
+academicRouter.get('/api/classes', async (req: AuthRequest, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT cc.id AS class_id, cc.class_code, cc.max_capacity, cc.default_room,
+              c.id AS course_id, c.title AS course_title, c.description AS course_description,
+              s.id AS semester_id, s.code AS semester_code, s.name AS semester_name,
+              u.id AS instructor_id, u.name AS instructor_name,
+              count(e.id) FILTER (WHERE e.status = 'enrolled')::integer AS enrolled_count,
+              CASE WHEN $2 = 'admin' THEN 'admin'
+                   WHEN cc.instructor_id = $1 THEN 'instructor'
+                   ELSE 'student' END AS my_role
+       FROM course_classes cc
+       JOIN courses c ON c.id = cc.course_id
+       JOIN semesters s ON s.id = cc.semester_id
+       JOIN users u ON u.id = cc.instructor_id
+       LEFT JOIN enrollments e ON e.class_id = cc.id
+       WHERE ($2 = 'admin' OR cc.instructor_id = $1 OR EXISTS (
+         SELECT 1 FROM enrollments mine
+         WHERE mine.class_id = cc.id AND mine.user_id = $1 AND mine.status = 'enrolled'
+       ))
+       GROUP BY cc.id, c.id, s.id, u.id
+       ORDER BY s.start_date DESC, c.title, cc.class_code`,
+      [req.user!.id, req.user!.role],
+    )
+    return res.json({ classes: result.rows })
+  } catch (error) { return next(error) }
+})
+
 // A learner sees enrolled classes, while instructors see the classes they teach.
 academicRouter.get('/api/schedule', async (req: AuthRequest, res, next) => {
   try {
@@ -333,6 +372,42 @@ academicRouter.post('/api/sessions/:sessionId/attendance/check-in', requireRoles
   } finally { client.release() }
 })
 
+academicRouter.put('/api/sessions/:sessionId/attendance/:userId', requireRoles('instructor', 'admin'), async (req: AuthRequest, res, next) => {
+  try {
+    const sessionId = routeParam(req.params.sessionId)
+    const userId = routeParam(req.params.userId)
+    const { status, note } = req.body ?? {}
+    if (!uuidPattern.test(sessionId) || !uuidPattern.test(userId)) {
+      return res.status(400).json({ error: 'sessionId and userId must be UUIDs' })
+    }
+    if (!['present', 'absent', 'late', 'excused'].includes(status)) {
+      return res.status(400).json({ error: 'status must be present, absent, late, or excused' })
+    }
+    if (note !== undefined && note !== null && (typeof note !== 'string' || note.length > 2000)) {
+      return res.status(400).json({ error: 'note must be a string of at most 2000 characters' })
+    }
+    const result = await pool.query(
+      `INSERT INTO attendance_records (session_id, user_id, status, checkin_time, method, note)
+       SELECT cs.id, $2, $3,
+              CASE WHEN $3 IN ('present', 'late') THEN now() ELSE NULL END,
+              'manual', $4
+       FROM course_sessions cs JOIN course_classes cc ON cc.id = cs.class_id
+       WHERE cs.id = $1 AND ($5 = 'admin' OR cc.instructor_id = $6)
+         AND EXISTS (
+           SELECT 1 FROM enrollments e
+           WHERE e.class_id = cc.id AND e.user_id = $2 AND e.status = 'enrolled'
+         )
+       ON CONFLICT (session_id, user_id) DO UPDATE
+         SET status = EXCLUDED.status, checkin_time = EXCLUDED.checkin_time,
+             method = 'manual', note = EXCLUDED.note
+       RETURNING id, session_id, user_id, status, checkin_time, method, note, created_at`,
+      [sessionId, userId, status, note ?? null, req.user!.role, req.user!.id],
+    )
+    if (!result.rowCount) return res.status(404).json({ error: 'Session or enrolled student not found, or session not assigned to you' })
+    return res.json({ attendance: result.rows[0] })
+  } catch (error) { return next(error) }
+})
+
 academicRouter.get('/api/classes/:classId/attendance/summary', requireRoles('instructor', 'admin'), async (req: AuthRequest, res, next) => {
   try {
     const classId = routeParam(req.params.classId)
@@ -355,6 +430,22 @@ academicRouter.get('/api/classes/:classId/attendance/summary', requireRoles('ins
          FROM roster r LEFT JOIN completed cs ON true
          LEFT JOIN attendance_records ar ON ar.session_id = cs.id AND ar.user_id = r.user_id
          GROUP BY r.user_id, r.name, r.email
+       ), per_session AS (
+         SELECT cs.id, cs.session_number, cs.title, cs.session_date,
+                count(r.user_id)::integer AS enrolled_count,
+                count(r.user_id) FILTER (WHERE ar.status = 'present')::integer AS present_count,
+                count(r.user_id) FILTER (WHERE ar.status = 'late')::integer AS late_count,
+                count(r.user_id) FILTER (WHERE ar.status = 'excused')::integer AS excused_count,
+                count(r.user_id) FILTER (WHERE ar.status = 'absent' OR (
+                  ar.id IS NULL AND timezone('Asia/Ho_Chi_Minh', now()) > (cs.session_date + cs.end_time)
+                ))::integer AS absent_count,
+                round(100.0 * count(r.user_id) FILTER (WHERE ar.status IN ('present', 'late'))
+                  / NULLIF(count(r.user_id) - count(r.user_id) FILTER (WHERE ar.status = 'excused'), 0), 2) AS attendance_rate_percent
+         FROM course_sessions cs
+         LEFT JOIN roster r ON true
+         LEFT JOIN attendance_records ar ON ar.session_id = cs.id AND ar.user_id = r.user_id
+         WHERE cs.class_id = $1
+         GROUP BY cs.id, cs.session_number, cs.title, cs.session_date, cs.end_time
        ), class_info AS (
          SELECT cc.max_capacity, cc.class_code, c.title AS course_title, s.code AS semester_code
          FROM course_classes cc JOIN courses c ON c.id = cc.course_id
@@ -373,7 +464,14 @@ academicRouter.get('/api/classes/:classId/attendance/summary', requireRoles('ins
                 'excusedSessions', ps.excused_sessions,
                 'attendanceRatePercent', round(100.0 * ps.attended_sessions
                   / NULLIF(ps.completed_sessions - ps.excused_sessions, 0), 2)
-              ) ORDER BY ps.name) FILTER (WHERE ps.user_id IS NOT NULL), '[]'::json) AS students
+              ) ORDER BY ps.name) FILTER (WHERE ps.user_id IS NOT NULL), '[]'::json) AS students,
+              (SELECT COALESCE(json_agg(json_build_object(
+                'sessionId', x.id, 'sessionNumber', x.session_number, 'title', x.title,
+                'sessionDate', x.session_date, 'enrolledCount', x.enrolled_count,
+                'presentCount', x.present_count, 'lateCount', x.late_count,
+                'absentCount', x.absent_count, 'excusedCount', x.excused_count,
+                'attendanceRatePercent', x.attendance_rate_percent
+              ) ORDER BY x.session_number), '[]'::json) FROM per_session x) AS sessions
        FROM class_info ci LEFT JOIN per_student ps ON true
        GROUP BY ci.class_code, ci.course_title, ci.semester_code, ci.max_capacity`,
       [classId],
@@ -396,7 +494,7 @@ academicRouter.get('/api/sessions/:sessionId/quizzes', async (req: AuthRequest, 
     )
     if (!access.rowCount) return res.status(404).json({ error: 'Session not found or inaccessible' })
     const result = await pool.query(
-      `SELECT q.id AS quiz_id, q.title AS quiz_title,
+      `SELECT q.id AS "quizId", q.title AS "quizTitle",
               COALESCE(json_agg(json_build_object(
                 'id', question.id, 'skillId', question.skill_id, 'skillCode', sk.code,
                 'prompt', question.prompt, 'options', question.options, 'position', question.position
